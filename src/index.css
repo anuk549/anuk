@@ -1,0 +1,112 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f6f2e7;
+  --fg: #131209;
+  --fg-muted: #6b6555;
+  --card: #fffdf6;
+  --border: rgba(19, 18, 9, 0.12);
+  --accent: #b6ff2f;
+  --accent-ink: #0f1002;
+  --accent-2: #ff3d5a;
+  --accent-contrast: #0f1002;
+  --grid-dot: rgba(19, 18, 9, 0.07);
+  --noise-opacity: 0.05;
+}
+
+.dark {
+  --bg: #0a0a06;
+  --fg: #f3efe1;
+  --fg-muted: #8f8a77;
+  --card: #131309;
+  --border: rgba(243, 239, 225, 0.1);
+  --accent: #ccff5c;
+  --accent-ink: #0a0a06;
+  --accent-2: #ff5c78;
+  --accent-contrast: #0a0a06;
+  --grid-dot: rgba(243, 239, 225, 0.06);
+  --noise-opacity: 0.06;
+}
+
+* {
+  scroll-behavior: smooth;
+}
+
+html {
+  background: var(--bg);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+  transition: background-color 0.5s ease, color 0.5s ease;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: var(--noise-opacity);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.font-heading, h1, h2, h3 {
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+@media (pointer: fine) {
+  .cursor-none-desktop,
+  .cursor-none-desktop * {
+    cursor: none !important;
+  }
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes marquee-reverse {
+  from { transform: translateX(-50%); }
+  to { transform: translateX(0); }
+}
+
+.animate-marquee {
+  animation: marquee 32s linear infinite;
+}
+
+.animate-marquee-reverse {
+  animation: marquee-reverse 26s linear infinite;
+}
+
+@keyframes blink-caret {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.caret-blink {
+  animation: blink-caret 0.9s step-end infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(2deg); }
+}
+
+.animate-float-slow {
+  animation: float-slow 7s ease-in-out infinite;
+}
+
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
