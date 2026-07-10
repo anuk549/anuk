@@ -1,7 +1,1 @@
-{
-  "env": {
-    "MONGODB_URI": "",
-    "ADMIN_TOKEN": "",
-    "ADMIN_PASSWORD": ""
-  }
-}
+{}
