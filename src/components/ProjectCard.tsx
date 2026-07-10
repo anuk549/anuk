@@ -3,9 +3,17 @@ import { motion } from 'framer-motion';
 import { ExternalLink, Github, ImageOff } from 'lucide-react';
 import { playClickSound } from '../lib/sound';
 
-interface Project {
-  _id: string; title: string; description: string; image_url: string;
-  live_url: string; github_url: string; tags: string[];
+export interface Project {
+  _id: string;
+  key?: string;
+  title: string;
+  description: string;
+  image_url: string;
+  live_url: string;
+  github_url: string;
+  tags: string[];
+  featured?: boolean;
+  order_index?: number;
 }
 
 export default function ProjectCard({ p, index }: { p: Project; index: number }) {
