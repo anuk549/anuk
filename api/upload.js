@@ -1,5 +1,5 @@
 import { GridFSBucket } from 'mongodb';
-import { getDb } from './db-mongo.js';
+import { getDb } from './_lib/db-mongo.js';
 import crypto from 'node:crypto';
 
 function safeCompare(a, b) {

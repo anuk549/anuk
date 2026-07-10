@@ -1,5 +1,5 @@
 import { ObjectId, GridFSBucket } from 'mongodb';
-import { getDb } from './db-mongo.js';
+import { getDb } from './_lib/db-mongo.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

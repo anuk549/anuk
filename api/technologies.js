@@ -1,5 +1,5 @@
-import { getDb, collection, ObjectId } from './db-mongo.js';
-import { requireAuth } from './auth.js';
+import { getDb, collection, ObjectId } from './_lib/db-mongo.js';
+import { requireAuth } from './_lib/auth.js';
 
 function toObjectId(id) {
   if (!id) return id;

@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "seed:mongo": "node api/seed-mongo.js"
+    "seed:mongo": "node scripts/seed-mongo.js"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
