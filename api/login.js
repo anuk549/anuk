@@ -24,6 +24,11 @@ export default async function handler(req, res) {
     const adminToken = process.env.ADMIN_TOKEN;
 
     if (!adminPassword || !adminToken) {
+      console.log(
+        `[login] Auth env diagnostic: ` +
+          `ADMIN_PASSWORD_set=${!!adminPassword} ` +
+          `ADMIN_TOKEN_set=${!!adminToken}`
+      );
       return res.status(500).json({ error: 'Auth not configured' });
     }
 
