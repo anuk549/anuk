@@ -12,7 +12,6 @@ interface Profile {
   avatar_url: string;
 }
 
-const roleWords = ['REACT', 'JAVA', 'SPRING BOOT', 'TYPESCRIPT'];
 
 export default function Hero({ profile }: { profile: Profile | null }) {
   const name = profile?.full_name || 'Anuk Hettiarachchi';
@@ -39,7 +38,7 @@ export default function Hero({ profile }: { profile: Profile | null }) {
             <span className="h-1.5 w-1.5 rounded-full bg-[var(--accent)] animate-pulse" /> Open to opportunities
           </span>
           <span>Colombo, Sri Lanka</span>
-          <span>Full Stack &middot; React &middot; Java &middot; Spring Boot</span>
+          <span>Full Stack </span>
         </motion.div>
 
         {/* kinetic name */}
@@ -84,16 +83,35 @@ export default function Hero({ profile }: { profile: Profile | null }) {
           </motion.div>
         </div>
 
+        {/* role title under name */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          className="mt-6 flex flex-wrap items-center gap-3"
+        >
+          <span className="h-px w-10 bg-[var(--accent)] sm:w-14" />
+          <h2 className="font-heading text-2xl italic tracking-tight text-[var(--fg)] sm:text-3xl lg:text-4xl">
+            Full Stack Developer
+          </h2>
+        </motion.div>
+
         {/* role tag strip */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.6 }}
-          className="mt-6 flex flex-wrap items-center gap-2"
+          className="mt-4 flex flex-wrap items-center gap-2"
         >
-          {roleWords.map((w, i) => (
-            <span key={w} className={`rounded-full border border-[var(--border)] px-3 py-1 text-[11px] font-semibold tracking-wide ${i === 0 ? 'bg-[var(--fg)] text-[var(--bg)]' : 'text-[var(--fg-muted)]'}`}>
-              {w}
+          {(profile?.title && profile.title !== 'Full Stack Developer'
+            ? profile.title.split('|').map(part => part.trim()).filter(tag => tag && tag !== 'Full Stack Developer')
+            : ['React', 'Java', 'Spring Boot']
+          ).map((tag) => (
+            <span
+              key={tag}
+              className="rounded-full border border-[var(--border)] bg-[var(--card)]/50 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-[var(--fg-muted)] backdrop-blur-sm"
+            >
+              {tag}
             </span>
           ))}
         </motion.div>

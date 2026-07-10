@@ -133,3 +133,5 @@ Contact form submissions (visible only in the authenticated Admin dashboard).
 
 All routes are implemented as Vercel serverless functions using the Supabase JS client (service role on the server), with CORS headers, input validation, and 401/400/500 error handling.
  mongodb+srv://anuksindeepas_db_user:pxi3dqeFDKjg4BR4@cluster0.4zzauiz.mongodb.net/?appName=Cluster0
+
+ Demo: demo@example.com / password123

@@ -64,7 +64,6 @@ export default function Login() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
-        <p className="mt-5 text-center text-[11px] text-[var(--fg-muted)]">Demo: demo@example.com / password123</p>
       </motion.div>
     </div>
   );

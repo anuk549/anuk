@@ -1,29 +1,120 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, Github, Linkedin, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import Section, { SectionBody } from './Section';
 
 interface Profile { phone: string; email: string; linkedin: string; github: string; }
 
+// Bird that flies diagonally across the screen carrying the "msg sent" notification
+function BirdFly({ onDone }: { onDone: () => void }) {
+  useEffect(() => {
+    const t = setTimeout(onDone, 4200);
+    return () => clearTimeout(t);
+  }, [onDone]);
+
+  return (
+    <motion.div
+      role="status"
+      aria-live="polite"
+      className="pointer-events-none fixed inset-0 z-[60]"
+    >
+      <motion.div
+        className="absolute will-change-transform"
+        initial={{ x: '-12vw', y: '75vh', rotate: -8 }}
+        animate={{
+          x: ['-12vw', '20vw', '50vw', '78vw', '112vw'],
+          y: ['75vh', '45vh', '55vh', '28vh', '-18vh'],
+          rotate: [-8, -4, 2, -2, 6],
+        }}
+        transition={{ duration: 4, ease: 'easeInOut' }}
+      >
+        <div className="relative">
+          {/* "msg sent" bubble trails slightly above the bird */}
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: [0, 1, 1, 1, 0], y: [8, 0, 0, 0, -6] }}
+            transition={{ duration: 4, times: [0, 0.1, 0.5, 0.85, 1] }}
+            className="absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-[var(--border)] bg-[var(--card)]/95 px-4 py-1.5 text-xs font-semibold text-[var(--fg)] shadow-[0_8px_24px_rgba(0,0,0,0.18)] backdrop-blur"
+          >
+            ✉ msg sent
+          </motion.div>
+
+          {/* Bird SVG with flapping wings */}
+          <motion.svg
+            width="72"
+            height="72"
+            viewBox="0 0 100 100"
+            style={{ overflow: 'visible' }}
+            aria-hidden="true"
+          >
+            {/* body */}
+            <ellipse cx="50" cy="58" rx="20" ry="12" style={{ fill: 'var(--accent)' }} />
+            {/* head */}
+            <circle cx="70" cy="46" r="10" style={{ fill: 'var(--accent)' }} />
+            {/* beak */}
+            <polygon points="79,46 90,44 79,50" style={{ fill: '#f59e0b' }} />
+            {/* eye */}
+            <circle cx="71" cy="44" r="1.6" style={{ fill: '#0a0a06' }} />
+            {/* tail */}
+            <polygon points="30,58 14,52 16,64" style={{ fill: 'var(--accent-2)' }} />
+            {/* left wing (flapping) */}
+            <motion.path
+              d="M 40,52 Q 25,32 35,15 Q 48,38 40,52 Z"
+              style={{ fill: 'var(--accent-2)', transformOrigin: '40px 52px' }}
+              animate={{ scaleY: [1, 0.4, 1, 0.5, 1], rotate: [0, -12, 0, -10, 0] }}
+              transition={{ duration: 0.45, repeat: Infinity, ease: 'easeInOut' }}
+            />
+            {/* right wing (flapping, offset for natural flap) */}
+            <motion.path
+              d="M 60,52 Q 75,32 65,15 Q 52,38 60,52 Z"
+              style={{ fill: 'var(--accent-2)', transformOrigin: '60px 52px' }}
+              animate={{ scaleY: [1, 0.5, 1, 0.4, 1], rotate: [0, 12, 0, 10, 0] }}
+              transition={{ duration: 0.45, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          </motion.svg>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
 export default function Contact({ profile }: { profile: Profile | null }) {
   const [form, setForm] = useState({ name: '', email: '', message: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
+  const [shakeKey, setShakeKey] = useState(0);
 
   const validate = () => {
     const e: Record<string, string> = {};
     if (!form.name.trim()) e.name = 'Name is required';
+    else if (form.name.trim().length < 2) e.name = 'Name must be at least 2 characters';
+
     if (!form.email.trim()) e.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = 'Enter a valid email';
+
     if (!form.message.trim()) e.message = 'Message is required';
     else if (form.message.length < 10) e.message = 'Message must be at least 10 characters';
+
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
+  // Clear a field's error as soon as the user starts fixing it
+  const clearError = (field: 'name' | 'email' | 'message') => {
+    setErrors(prev => {
+      if (!prev[field]) return prev;
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
+  };
+
   const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
-    if (!validate()) return;
+    if (!validate()) {
+      setShakeKey(k => k + 1); // replay the shake animation
+      return;
+    }
     setStatus('loading');
     try {
       const res = await fetch('/api/messages', {
@@ -34,10 +125,20 @@ export default function Contact({ profile }: { profile: Profile | null }) {
       if (!res.ok) throw new Error('failed');
       setStatus('sent');
       setForm({ name: '', email: '', message: '' });
+      setErrors({});
     } catch {
       setStatus('error');
     }
   };
+
+  const handleBirdDone = () => setStatus('idle');
+
+  const fieldClass = (field: 'name' | 'email' | 'message') =>
+    `w-full rounded-xl border bg-[var(--bg)] px-4 py-3 text-sm text-[var(--fg)] outline-none transition focus:border-[var(--accent)] ${
+      errors[field]
+        ? 'border-[var(--accent-2)] focus:border-[var(--accent-2)]'
+        : 'border-[var(--border)]'
+    }`;
 
   return (
     <>
@@ -88,39 +189,43 @@ export default function Contact({ profile }: { profile: Profile | null }) {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
+            animate={shakeKey > 0 ? { x: [0, -8, 8, -6, 6, -3, 3, 0] } : undefined}
             className="space-y-4 rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-7"
           >
             <div>
               <input
                 value={form.name}
-                onChange={e => setForm({ ...form, name: e.target.value })}
+                onChange={e => { setForm({ ...form, name: e.target.value }); clearError('name'); }}
                 placeholder="your name"
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--fg)] outline-none transition focus:border-[var(--accent)]"
+                aria-invalid={!!errors.name}
+                className={fieldClass('name')}
               />
               {errors.name && <p className="mt-1 text-xs text-[var(--accent-2)]">{errors.name}</p>}
             </div>
             <div>
               <input
                 value={form.email}
-                onChange={e => setForm({ ...form, email: e.target.value })}
+                onChange={e => { setForm({ ...form, email: e.target.value }); clearError('email'); }}
                 placeholder="your@email.com"
-                className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--fg)] outline-none transition focus:border-[var(--accent)]"
+                aria-invalid={!!errors.email}
+                className={fieldClass('email')}
               />
               {errors.email && <p className="mt-1 text-xs text-[var(--accent-2)]">{errors.email}</p>}
             </div>
             <div>
               <textarea
                 value={form.message}
-                onChange={e => setForm({ ...form, message: e.target.value })}
+                onChange={e => { setForm({ ...form, message: e.target.value }); clearError('message'); }}
                 placeholder="tell me about your project..."
                 rows={5}
-                className="w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--fg)] outline-none transition focus:border-[var(--accent)]"
+                aria-invalid={!!errors.message}
+                className={fieldClass('message')}
               />
               {errors.message && <p className="mt-1 text-xs text-[var(--accent-2)]">{errors.message}</p>}
             </div>
             <button
               type="submit"
-              disabled={status === 'loading'}
+              disabled={status === 'loading' || status === 'sent'}
               className="flex w-full items-center justify-center gap-2 rounded-full bg-[var(--fg)] px-6 py-3.5 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-ink)] disabled:opacity-60"
             >
               {status === 'sent' ? <><CheckCircle2 size={16} /> Sent!</> : status === 'loading' ? 'Sending...' : <>Send Message <ArrowUpRight size={15} /></>}
@@ -129,6 +234,7 @@ export default function Contact({ profile }: { profile: Profile | null }) {
           </motion.form>
         </div>
       </SectionBody>
+      {status === 'sent' && <BirdFly onDone={handleBirdDone} />}
     </>
   );
 }

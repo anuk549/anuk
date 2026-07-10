@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import Section, { SectionBody } from './Section';
 import { Code2, Server, Wrench, TestTube2, Layers } from 'lucide-react';
+import { techMeta } from '../lib/icons';
 
 interface Skill { id: number; category: string; name: string; }
 
@@ -39,11 +40,24 @@ export default function Skills({ items }: { items: Skill[] }) {
                   <h3 className="font-heading text-base italic font-semibold text-[var(--fg)]">{category}</h3>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  {skills.map(s => (
-                    <span key={s.id} className="rounded-full border border-[var(--border)] bg-[var(--bg)] px-3 py-1.5 text-[12.5px] font-medium text-[var(--fg-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--accent-ink)]">
-                      {s.name}
-                    </span>
-                  ))}
+                  {skills.map(s => {
+                    const meta = techMeta[s.name];
+                    return (
+                      <span key={s.id} className="inline-flex items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--bg)] px-3 py-1.5 text-[12.5px] font-medium text-[var(--fg-muted)] transition hover:border-[var(--accent)] hover:bg-[var(--accent)] hover:text-[var(--accent-ink)]">
+                        {meta && (
+                          <img
+                            src={`https://cdn.simpleicons.org/${meta.slug}/${meta.color}`}
+                            alt=""
+                            aria-hidden="true"
+                            className="h-3.5 w-3.5 opacity-90 transition group-hover:brightness-0"
+                            loading="lazy"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
+                        {s.name}
+                      </span>
+                    );
+                  })}
                 </div>
               </motion.div>
             );

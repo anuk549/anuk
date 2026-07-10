@@ -5,7 +5,7 @@ export default function Footer() {
     <footer className="border-t border-[var(--border)] px-5 py-8">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-[11px] uppercase tracking-[0.2em] text-[var(--fg-muted)] sm:flex-row">
         <p>&copy; {new Date().getFullYear()} Anuk Hettiarachchi</p>
-        <p className="font-heading text-sm italic normal-case tracking-normal text-[var(--fg)]">Built with React &middot; Node &middot; Supabase</p>
+        <p className="font-heading text-sm italic normal-case tracking-normal text-[var(--fg)]"></p>
         <button
           onClick={() => {
             playClickSound();
