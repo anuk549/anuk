@@ -12,6 +12,17 @@ function safeCompare(a, b) {
 }
 
 export default async function handler(req, res) {
+  // Always log so we can see in Vercel logs that the function is being invoked
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const adminToken = process.env.ADMIN_TOKEN;
+  const mongoUri = process.env.MONGODB_URI;
+  console.error(
+    `[login] invoked method=${req.method} ` +
+      `ADMIN_PASSWORD_set=${!!adminPassword} ` +
+      `ADMIN_TOKEN_set=${!!adminToken} ` +
+      `MONGODB_URI_set=${!!mongoUri}`
+  );
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -20,15 +31,9 @@ export default async function handler(req, res) {
 
   try {
     const { password } = req.body || {};
-    const adminPassword = process.env.ADMIN_PASSWORD;
-    const adminToken = process.env.ADMIN_TOKEN;
 
     if (!adminPassword || !adminToken) {
-      console.log(
-        `[login] Auth env diagnostic: ` +
-          `ADMIN_PASSWORD_set=${!!adminPassword} ` +
-          `ADMIN_TOKEN_set=${!!adminToken}`
-      );
+      console.error('[login] Auth env diagnostic: REJECTED — missing ADMIN_PASSWORD or ADMIN_TOKEN');
       return res.status(500).json({ error: 'Auth not configured' });
     }
 
@@ -40,7 +45,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ token: adminToken });
   } catch (err) {
-    console.error('Login error:', err);
+    console.error('[login] uncaught error:', err);
     return res.status(500).json({ error: err.message });
   }
 }
