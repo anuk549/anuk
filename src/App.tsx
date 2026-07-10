@@ -12,6 +12,7 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
+          <AnalyticsDebug />
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
@@ -19,9 +20,14 @@ function App() {
           </Routes>
         </BrowserRouter>
       </AuthProvider>
-      <Analytics />
     </ThemeProvider>
   );
 }
+
+function AnalyticsDebug() {
+  return <Analytics />;
+}
+
+
 
 export default App;
