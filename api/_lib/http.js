@@ -46,7 +46,8 @@ export function setNoStore(res) {
 }
 
 export function setPublicCache(res, maxAge = 60) {
-  res.setHeader('Cache-Control', `public, s-maxage=${maxAge}, stale-while-revalidate=300`);
+  // Browser cache only — avoid Vercel CDN caching editable portfolio content.
+  res.setHeader('Cache-Control', `public, max-age=${maxAge}, must-revalidate`);
 }
 
 export function sendError(res, err, status = 500) {

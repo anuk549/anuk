@@ -70,12 +70,16 @@ export default defineConfig(async ({ mode }) => {
           const parts = routeName.split('/');
           
           let apiFile = '';
-          // 1. Try matching the exact filename
           const exactPath = path.resolve(process.cwd(), 'api', `${routeName}.js`);
           if (fs.existsSync(exactPath)) {
             apiFile = exactPath;
-          } else {
-            // 2. Try matching the first segment (e.g. /api/files/[id] -> api/files.js)
+          } else if (parts.length >= 2) {
+            const dynamicPath = path.resolve(process.cwd(), 'api', parts[0], '[id].js');
+            if (fs.existsSync(dynamicPath)) {
+              apiFile = dynamicPath;
+            }
+          }
+          if (!apiFile) {
             const segmentPath = path.resolve(process.cwd(), 'api', `${parts[0]}.js`);
             if (fs.existsSync(segmentPath)) {
               apiFile = segmentPath;
@@ -90,6 +94,9 @@ export default defineConfig(async ({ mode }) => {
 
               // Parse query parameters
               req.query = Object.fromEntries(url.searchParams.entries());
+              if (parts.length >= 2 && !req.query.id) {
+                req.query.id = parts[1];
+              }
 
               // Add Express/Vercel status helper
               res.status = (code: number) => {

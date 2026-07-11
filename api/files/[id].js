@@ -1,5 +1,5 @@
-import { applyCors, handlePreflight, sendError } from './_lib/http.js';
-import { extractFileId, serveFileById } from './_lib/serve-file.js';
+import { applyCors, handlePreflight, sendError } from '../_lib/http.js';
+import { extractFileId, serveFileById } from '../_lib/serve-file.js';
 
 export default async function handler(req, res) {
   applyCors(req, res, 'GET, OPTIONS');

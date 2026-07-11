@@ -89,9 +89,12 @@ export default function Admin() {
   const saveBio = async (e: React.FormEvent) => {
     e.preventDefault();
     playClickSound();
-    const body = bio?._id ? bio : { ...bio, _id: 'bio' };
-    const res = await authFetch('/api/bio', { method: 'PUT', body: JSON.stringify(body) });
-    if (res.ok) { notify('Bio saved'); loadAll(); } else notify('Error saving bio');
+    const res = await authFetch('/api/bio', { method: 'PUT', body: JSON.stringify(bio) });
+    if (res.ok) { notify('Bio saved'); loadAll(); }
+    else {
+      const data = await res.json().catch(() => ({}));
+      notify(data.error || 'Error saving bio');
+    }
   };
 
   const uploadBioImage = async (file: File) => {
