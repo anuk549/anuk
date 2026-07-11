@@ -16,7 +16,7 @@ export default async function handler(req, res) {
 
   try {
     const db = await getDb();
-    const col = db.collection('profile');
+    const col = db.collection('bio');
 
     if (req.method === 'GET') {
       setPublicCache(res, 120);
@@ -28,12 +28,13 @@ export default async function handler(req, res) {
       if (!requireAuth(req, res)) return;
       const { _id, ...rest } = req.body;
       if (!_id) return res.status(400).json({ error: '_id is required' });
-      const result = await col.updateOne(
-        { _id: toObjectId(_id) },
-        { $set: { ...rest, updated_at: new Date().toISOString() } }
+      const id = toObjectId(_id);
+      await col.updateOne(
+        { _id: id },
+        { $set: { ...rest, updated_at: new Date().toISOString() } },
+        { upsert: true }
       );
-      if (result.matchedCount === 0) return res.status(404).json({ error: 'Not found' });
-      const updated = await col.findOne({ _id: toObjectId(_id) });
+      const updated = await col.findOne({ _id: id });
       return res.status(200).json(updated);
     }
     return res.status(405).json({ error: 'Method not allowed' });

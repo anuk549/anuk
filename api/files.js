@@ -1,11 +1,10 @@
 import { ObjectId, GridFSBucket } from 'mongodb';
 import { getDb } from './_lib/db-mongo.js';
+import { applyCors, handlePreflight, sendError } from './_lib/http.js';
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(204).end();
+  applyCors(req, res, 'GET, OPTIONS');
+  if (handlePreflight(req, res)) return;
 
   try {
     if (req.method !== 'GET') {
@@ -29,6 +28,8 @@ export default async function handler(req, res) {
     if (file.contentType) {
       res.setHeader('Content-Type', file.contentType);
     }
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
 
     const downloadStream = bucket.openDownloadStream(new ObjectId(id));
 
@@ -41,9 +42,8 @@ export default async function handler(req, res) {
 
     downloadStream.pipe(res);
   } catch (err) {
-    console.error('API error:', err);
     if (!res.headersSent) {
-      res.status(500).json({ error: err.message });
+      return sendError(res, err);
     }
   }
 }

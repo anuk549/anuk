@@ -4,7 +4,6 @@ export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
   const [enabled, setEnabled] = useState(false);
-  const [hoveringLink, setHoveringLink] = useState(false);
 
   useEffect(() => {
     const isFine = window.matchMedia('(pointer: fine)').matches;
@@ -22,7 +21,13 @@ export default function CustomCursor() {
         dotRef.current.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
       }
       const target = e.target as HTMLElement;
-      setHoveringLink(!!target.closest('a, button, input, textarea, [role="button"]'));
+      const hovering = !!target.closest('a, button, input, textarea, [role="button"]');
+      if (ringRef.current) {
+        ringRef.current.style.width = hovering ? '52px' : '30px';
+        ringRef.current.style.height = hovering ? '52px' : '30px';
+        ringRef.current.style.borderColor = hovering ? 'var(--accent)' : 'var(--fg-muted)';
+        ringRef.current.style.borderWidth = hovering ? '1.5px' : '1px';
+      }
     };
 
     const tick = () => {
@@ -55,10 +60,10 @@ export default function CustomCursor() {
         ref={ringRef}
         className="pointer-events-none fixed left-0 top-0 z-[998] rounded-full border transition-[width,height,border-color] duration-200 ease-out"
         style={{
-          width: hoveringLink ? 52 : 30,
-          height: hoveringLink ? 52 : 30,
-          borderColor: hoveringLink ? 'var(--accent)' : 'var(--fg-muted)',
-          borderWidth: hoveringLink ? 1.5 : 1,
+          width: 30,
+          height: 30,
+          borderColor: 'var(--fg-muted)',
+          borderWidth: 1,
           willChange: 'transform',
         }}
       />

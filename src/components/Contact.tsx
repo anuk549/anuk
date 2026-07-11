@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, Github, Linkedin, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import Section, { SectionBody } from './Section';
+import { playClickSound, playHoverSound, playSuccessSound } from '../lib/sound';
 
 interface Profile { phone: string; email: string; linkedin: string; github: string; }
 
@@ -87,7 +88,7 @@ function BirdFly({ onDone }: { onDone: () => void }) {
 }
 
 export default function Contact({ profile }: { profile: Profile | null }) {
-  const [form, setForm] = useState({ name: '', email: '', message: '' });
+  const [form, setForm] = useState({ name: '', email: '', message: '', website: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
   const [shakeKey, setShakeKey] = useState(0);
@@ -119,6 +120,7 @@ export default function Contact({ profile }: { profile: Profile | null }) {
 
   const submit = async (ev: React.FormEvent) => {
     ev.preventDefault();
+    playClickSound();
     if (!validate()) {
       setShakeKey(k => k + 1); // replay the shake animation
       return;
@@ -132,7 +134,8 @@ export default function Contact({ profile }: { profile: Profile | null }) {
       });
       if (!res.ok) throw new Error('failed');
       setStatus('sent');
-      setForm({ name: '', email: '', message: '' });
+      playSuccessSound();
+      setForm({ name: '', email: '', message: '', website: '' });
       setErrors({});
     } catch {
       setStatus('error');
@@ -165,25 +168,49 @@ export default function Contact({ profile }: { profile: Profile | null }) {
             </p>
             <div className="space-y-3">
               {profile?.email && (
-                <a href={`mailto:${profile.email}`} className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 text-sm font-medium text-[var(--fg)] transition hover:border-[var(--accent)]">
+                <a
+                  href={`mailto:${profile.email}`}
+                  onMouseEnter={playHoverSound}
+                  onClick={playClickSound}
+                  className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 text-sm font-medium text-[var(--fg)] transition hover:border-[var(--accent)]"
+                >
                   <span className="flex items-center gap-3"><Mail size={16} className="text-[var(--accent-2)]" /> {profile.email}</span>
                   <ArrowUpRight size={14} className="opacity-0 transition group-hover:opacity-100" />
                 </a>
               )}
               {profile?.phone && (
-                <a href={`tel:${profile.phone.replace(/\s/g, '')}`} className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 text-sm font-medium text-[var(--fg)] transition hover:border-[var(--accent)]">
+                <a
+                  href={`tel:${profile.phone.replace(/\s/g, '')}`}
+                  onMouseEnter={playHoverSound}
+                  onClick={playClickSound}
+                  className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 text-sm font-medium text-[var(--fg)] transition hover:border-[var(--accent)]"
+                >
                   <span className="flex items-center gap-3"><Phone size={16} className="text-[var(--accent-2)]" /> {profile.phone}</span>
                   <ArrowUpRight size={14} className="opacity-0 transition group-hover:opacity-100" />
                 </a>
               )}
               {profile?.linkedin && (
-                <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`} target="_blank" rel="noreferrer" className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 text-sm font-medium text-[var(--fg)] transition hover:border-[var(--accent)]">
+                <a
+                  href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onMouseEnter={playHoverSound}
+                  onClick={playClickSound}
+                  className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 text-sm font-medium text-[var(--fg)] transition hover:border-[var(--accent)]"
+                >
                   <span className="flex items-center gap-3"><Linkedin size={16} className="text-[var(--accent-2)]" /> LinkedIn Profile</span>
                   <ArrowUpRight size={14} className="opacity-0 transition group-hover:opacity-100" />
                 </a>
               )}
               {profile?.github && (
-                <a href={profile.github.startsWith('http') ? profile.github : `https://${profile.github}`} target="_blank" rel="noreferrer" className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 text-sm font-medium text-[var(--fg)] transition hover:border-[var(--accent)]">
+                <a
+                  href={profile.github.startsWith('http') ? profile.github : `https://${profile.github}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  onMouseEnter={playHoverSound}
+                  onClick={playClickSound}
+                  className="group flex items-center justify-between rounded-2xl border border-[var(--border)] bg-[var(--card)] px-5 py-3.5 text-sm font-medium text-[var(--fg)] transition hover:border-[var(--accent)]"
+                >
                   <span className="flex items-center gap-3"><Github size={16} className="text-[var(--accent-2)]" /> GitHub Profile</span>
                   <ArrowUpRight size={14} className="opacity-0 transition group-hover:opacity-100" />
                 </a>
@@ -200,6 +227,16 @@ export default function Contact({ profile }: { profile: Profile | null }) {
             animate={shakeKey > 0 ? { x: [0, -8, 8, -6, 6, -3, 3, 0] } : undefined}
             className="space-y-4 rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-7"
           >
+            <input
+              type="text"
+              name="website"
+              value={form.website}
+              onChange={e => setForm({ ...form, website: e.target.value })}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute -left-[9999px] h-0 w-0 opacity-0"
+            />
             <div>
               <input
                 value={form.name}
@@ -234,6 +271,7 @@ export default function Contact({ profile }: { profile: Profile | null }) {
             <button
               type="submit"
               disabled={status === 'loading' || status === 'sent'}
+              onMouseEnter={playHoverSound}
               className="flex w-full items-center justify-center gap-2 rounded-full bg-[var(--fg)] px-6 py-3.5 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-ink)] disabled:opacity-60"
             >
               {status === 'sent' ? <><CheckCircle2 size={16} /> Sent!</> : status === 'loading' ? 'Sending...' : <>Send Message <ArrowUpRight size={15} /></>}

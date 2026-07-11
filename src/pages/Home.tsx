@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
+import About from '../components/About';
 import TechMarquee from '../components/TechMarquee';
 import Experience from '../components/Experience';
 import Education from '../components/Education';
@@ -73,6 +74,7 @@ export default function Home() {
       <Navbar />
       <Hero profile={profile} />
       <TechMarquee items={tech} />
+      <About profile={profile} />
       <Experience items={experience} />
       <Education items={education} />
       <Skills items={skills} />

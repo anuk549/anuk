@@ -107,6 +107,17 @@ body::before {
   animation: float-slow 7s ease-in-out infinite;
 }
 
+@keyframes float-3d {
+  0%, 100% { transform: translateY(0) rotateX(8deg) rotateY(-12deg); }
+  50% { transform: translateY(-18px) rotateX(-6deg) rotateY(10deg); }
+}
+
+.animate-float-3d {
+  animation: float-3d 8s ease-in-out infinite;
+  transform-style: preserve-3d;
+  perspective: 600px;
+}
+
 ::-webkit-scrollbar { width: 10px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }

@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { ArrowDownRight, Mail, Github, Linkedin, Phone } from 'lucide-react';
+import { playClickSound, playHoverSound } from '../lib/sound';
 
 interface Profile {
   full_name: string;
@@ -125,7 +126,7 @@ export default function Hero({ profile }: { profile: Profile | null }) {
             transition={{ duration: 0.6 }}
             className="max-w-2xl text-[15px] leading-relaxed text-[var(--fg-muted)]"
           >
-            {profile?.summary || 'Full Stack Developer building enterprise web applications across transport, HR and manufacturing domains.'}
+            Full Stack Developer building enterprise web applications across transport, HR, and manufacturing.
           </motion.p>
 
           <motion.div
@@ -136,25 +137,25 @@ export default function Hero({ profile }: { profile: Profile | null }) {
             className="flex shrink-0 flex-col gap-2 text-[13px]"
           >
             {profile?.email && (
-              <a href={`mailto:${profile.email}`} className="group flex items-center gap-2.5 text-[var(--fg)]">
+              <a href={`mailto:${profile.email}`} onMouseEnter={playHoverSound} onClick={playClickSound} className="group flex items-center gap-2.5 text-[var(--fg)]">
                 <Mail size={14} className="text-[var(--accent-2)]" />
                 <span className="border-b border-transparent group-hover:border-[var(--fg)]">{profile.email}</span>
               </a>
             )}
             {profile?.phone && (
-              <a href={`tel:${profile.phone.replace(/\s/g, '')}`} className="group flex items-center gap-2.5 text-[var(--fg)]">
+              <a href={`tel:${profile.phone.replace(/\s/g, '')}`} onMouseEnter={playHoverSound} onClick={playClickSound} className="group flex items-center gap-2.5 text-[var(--fg)]">
                 <Phone size={14} className="text-[var(--accent-2)]" />
                 <span className="border-b border-transparent group-hover:border-[var(--fg)]">{profile.phone}</span>
               </a>
             )}
             <div className="flex gap-2 pt-1">
               {profile?.github && (
-                <a href={profile.github.startsWith('http') ? profile.github : `https://${profile.github}`} target="_blank" rel="noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]">
+                <a href={profile.github.startsWith('http') ? profile.github : `https://${profile.github}`} target="_blank" rel="noreferrer" onMouseEnter={playHoverSound} onClick={playClickSound} className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]">
                   <Github size={15} />
                 </a>
               )}
               {profile?.linkedin && (
-                <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`} target="_blank" rel="noreferrer" className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]">
+                <a href={profile.linkedin.startsWith('http') ? profile.linkedin : `https://${profile.linkedin}`} target="_blank" rel="noreferrer" onMouseEnter={playHoverSound} onClick={playClickSound} className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] transition hover:border-[var(--accent)] hover:text-[var(--accent)]">
                   <Linkedin size={15} />
                 </a>
               )}

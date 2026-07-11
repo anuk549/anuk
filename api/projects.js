@@ -1,5 +1,6 @@
-import { getDb, collection, ObjectId } from './_lib/db-mongo.js';
+import { getDb, ObjectId } from './_lib/db-mongo.js';
 import { requireAuth } from './_lib/auth.js';
+import { applyCors, handlePreflight, sendError, setNoStore, setPublicCache } from './_lib/http.js';
 
 function toObjectId(id) {
   if (!id) return id;
@@ -10,20 +11,20 @@ function toObjectId(id) {
 }
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  if (req.method === 'OPTIONS') return res.status(204).end();
+  applyCors(req, res, 'GET, POST, PUT, DELETE, OPTIONS');
+  if (handlePreflight(req, res)) return;
 
   try {
     const db = await getDb();
     const col = db.collection('projects');
 
     if (req.method === 'GET') {
+      setPublicCache(res, 120);
       const data = await col.find().sort({ order_index: 1 }).toArray();
       return res.status(200).json(data);
     }
     if (req.method === 'POST') {
+      setNoStore(res);
       if (!requireAuth(req, res)) return;
       const { title, description, image_url, live_url, github_url, tags, featured, order_index } = req.body;
       if (!title) return res.status(400).json({ error: 'title is required' });
@@ -36,6 +37,7 @@ export default async function handler(req, res) {
       return res.status(201).json(inserted);
     }
     if (req.method === 'PUT') {
+      setNoStore(res);
       if (!requireAuth(req, res)) return;
       const { _id, ...rest } = req.body;
       if (!_id) return res.status(400).json({ error: '_id is required' });
@@ -44,6 +46,7 @@ export default async function handler(req, res) {
       return res.status(200).json(updated);
     }
     if (req.method === 'DELETE') {
+      setNoStore(res);
       if (!requireAuth(req, res)) return;
       const { _id } = req.body;
       if (!_id) return res.status(400).json({ error: '_id is required' });
@@ -53,7 +56,6 @@ export default async function handler(req, res) {
     }
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (err) {
-    console.error('API error:', err);
-    return res.status(500).json({ error: err.message });
+    return sendError(res, err);
   }
 }

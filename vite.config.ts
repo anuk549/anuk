@@ -156,5 +156,16 @@ export default defineConfig(async ({ mode }) => {
     plugins: [...plugins, apiMiddlewarePlugin as any],
     envPrefix: ['VITE_', 'NEXT_PUBLIC_'],
     define: processEnvDefines,
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom', 'react-router-dom'],
+            motion: ['framer-motion'],
+            icons: ['lucide-react'],
+          },
+        },
+      },
+    },
   };
 })
