@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { LogOut, Plus, Trash2, Save, Upload, User, Briefcase, GraduationCap, Code2, FolderKanban, Mail, ExternalLink, Github, BookOpen } from 'lucide-react';
 import { authFetch } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
+import Loading from '../components/Loading';
 import { playClickSound } from '../lib/sound';
 import { defaultBio } from '../lib/bio';
 
@@ -198,7 +199,7 @@ export default function Admin() {
   };
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center bg-[var(--bg)]"><div className="h-8 w-8 rounded-full border-2 border-[var(--accent)] border-t-transparent animate-spin" /></div>;
+    return <Loading />;
   }
 
   return (

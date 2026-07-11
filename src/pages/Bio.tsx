@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { ArrowLeft, Github, ImageIcon } from 'lucide-react';
 import CustomCursor from '../components/CustomCursor';
 import ThemeToggle from '../components/ThemeToggle';
+import Loading from '../components/Loading';
 import { playClickSound, playHoverSound } from '../lib/sound';
 import { defaultBio, mergeBio, type BioData, type BioLink } from '../lib/bio';
 
@@ -76,11 +77,7 @@ export default function Bio() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-[var(--fg-muted)]">
-        <span className="font-heading text-2xl italic">Loading story…</span>
-      </div>
-    );
+    return <Loading />;
   }
 
   return (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Loading from '../components/Loading';
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
 import About from '../components/About';
@@ -48,16 +49,7 @@ export default function Home() {
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[var(--bg)] text-[var(--fg)]">
-        <span className="font-heading text-3xl italic">anuk.h</span>
-        <div className="flex gap-1.5">
-          <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--accent)]" style={{ animationDelay: '0ms' }} />
-          <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--accent-2)]" style={{ animationDelay: '150ms' }} />
-          <span className="h-2 w-2 animate-bounce rounded-full bg-[var(--fg)]" style={{ animationDelay: '300ms' }} />
-        </div>
-      </div>
-    );
+    return <Loading />;
   }
 
   if (error) {

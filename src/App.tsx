@@ -13,7 +13,6 @@ const Admin = lazy(() => import('./pages/Admin'));
 function PageLoader() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] text-[var(--fg-muted)]">
-      Loading…
     </div>
   );
 }
