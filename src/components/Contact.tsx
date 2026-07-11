@@ -8,8 +8,16 @@ interface Profile { phone: string; email: string; linkedin: string; github: stri
 // Bird that flies diagonally across the screen carrying the "msg sent" notification
 function BirdFly({ onDone }: { onDone: () => void }) {
   useEffect(() => {
+    const audio = new Audio('/bird-chirp.mp3');
+    audio.volume = 0.6;
+    audio.play().catch(() => {});
+
     const t = setTimeout(onDone, 4200);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      audio.pause();
+      audio.currentTime = 0;
+    };
   }, [onDone]);
 
   return (
