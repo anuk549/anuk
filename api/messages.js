@@ -1,19 +1,11 @@
-import { getDb, ObjectId } from './_lib/db-mongo.js';
+import { getDb } from './_lib/db-mongo.js';
 import { requireAuth } from './_lib/auth.js';
+import { toObjectId, pick, asBoolean } from './_lib/helpers.js';
 import { applyCors, handlePreflight, sendError, setNoStore, setPublicCache } from './_lib/http.js';
 import { rateLimit } from './_lib/rate-limit.js';
 
-function toObjectId(id) {
-  if (!id) return id;
-  if (ObjectId.isValid(id)) {
-    return new ObjectId(id);
-  }
-  return id;
-}
-
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-}
+const MAX_MESSAGE_LENGTH = 3000;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default async function handler(req, res) {
   applyCors(req, res, 'GET, POST, PUT, DELETE, OPTIONS');
@@ -31,15 +23,16 @@ export default async function handler(req, res) {
         return res.status(429).json({ error: 'Too many messages. Please try again later.' });
       }
 
-      const { name, email, message, website } = req.body;
+      const { name, email, message, website } = req.body || {};
       if (website) return res.status(201).json({ ok: true });
       if (!name || !email || !message) return res.status(400).json({ error: 'name, email and message are required' });
-      if (!isValidEmail(email)) return res.status(400).json({ error: 'Invalid email address' });
-      if (String(message).length > 3000) return res.status(400).json({ error: 'Message too long' });
+      if (!EMAIL_RE.test(String(email))) return res.status(400).json({ error: 'Invalid email address' });
+      if (String(message).length > MAX_MESSAGE_LENGTH) return res.status(400).json({ error: 'Message too long' });
+
       const doc = {
         name: String(name).slice(0, 200),
         email: String(email).slice(0, 200),
-        message: String(message).slice(0, 3000),
+        message: String(message).slice(0, MAX_MESSAGE_LENGTH),
         read: false,
         created_at: new Date().toISOString(),
       };
@@ -56,16 +49,18 @@ export default async function handler(req, res) {
     if (req.method === 'PUT') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { _id, read } = req.body;
+      const { _id } = req.body || {};
       if (!_id) return res.status(400).json({ error: '_id is required' });
-      await col.updateOne({ _id: toObjectId(_id) }, { $set: { read: !!read } });
+      const updates = pick(req.body, ['read']);
+      if ('read' in updates) updates.read = asBoolean(updates.read);
+      await col.updateOne({ _id: toObjectId(_id) }, { $set: updates });
       const updated = await col.findOne({ _id: toObjectId(_id) });
       return res.status(200).json(updated);
     }
     if (req.method === 'DELETE') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { _id } = req.body;
+      const { _id } = req.body || {};
       if (!_id) return res.status(400).json({ error: '_id is required' });
       const result = await col.deleteOne({ _id: toObjectId(_id) });
       if (result.deletedCount === 0) return res.status(404).json({ error: 'Not found' });

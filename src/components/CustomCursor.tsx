@@ -3,12 +3,10 @@ import { useEffect, useRef, useState } from 'react';
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const [enabled, setEnabled] = useState(false);
+  const [enabled] = useState(() => window.matchMedia('(pointer: fine)').matches);
 
   useEffect(() => {
-    const isFine = window.matchMedia('(pointer: fine)').matches;
-    setEnabled(isFine);
-    if (!isFine) return;
+    if (!enabled) return;
 
     let mouseX = 0, mouseY = 0;
     let ringX = 0, ringY = 0;
@@ -45,7 +43,7 @@ export default function CustomCursor() {
       window.removeEventListener('mousemove', move);
       cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [enabled]);
 
   if (!enabled) return null;
 

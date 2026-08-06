@@ -1,16 +1,21 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogOut, Plus, Trash2, Save, Upload, User, Briefcase, GraduationCap, Code2, FolderKanban, Mail, ExternalLink, Github, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  LogOut, Plus, Trash2, Save, Upload, User, Briefcase, GraduationCap, Code2,
+  FolderKanban, Mail, ExternalLink, Github, BookOpen, ChevronLeft, ChevronRight,
+  type LucideIcon,
+} from 'lucide-react';
 import { authFetch } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import Loading from '../components/Loading';
 import { playClickSound } from '../lib/sound';
-import { defaultBio } from '../lib/bio';
+import { defaultBio, mergeBio, type BioData } from '../lib/bio';
+import type { Profile, Experience, Education, Skill, Message, Project } from '../lib/types';
 
 type Tab = 'profile' | 'bio' | 'experience' | 'education' | 'skills' | 'projects' | 'messages';
 
-const tabs: { id: Tab; label: string; icon: any }[] = [
+const tabs: { id: Tab; label: string; icon: LucideIcon }[] = [
   { id: 'profile', label: 'Profile', icon: User },
   { id: 'bio', label: 'Bio', icon: BookOpen },
   { id: 'experience', label: 'Experience', icon: Briefcase },
@@ -24,20 +29,24 @@ export default function Admin() {
   const { token, setToken } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('profile');
-  const [profile, setProfile] = useState<any>(null);
-  const [bio, setBio] = useState<any>(null);
-  const [experience, setExperience] = useState<any[]>([]);
-  const [education, setEducation] = useState<any[]>([]);
-  const [skills, setSkills] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [messages, setMessages] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [bio, setBio] = useState<BioData>(defaultBio);
+  const [experience, setExperience] = useState<Experience[]>([]);
+  const [education, setEducation] = useState<Education[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState('');
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const notify = (msg: string) => { setToast(msg); setTimeout(() => setToast(''), 2500); };
+  const notify = (msg: string) => {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(''), 2500);
+  };
 
   const loadAll = useCallback(async () => {
-    setLoading(true);
     try {
       const [p, b, e, ed, s, pr, m] = await Promise.all([
         fetch('/api/profile').then(r => r.json()),
@@ -49,7 +58,7 @@ export default function Admin() {
         authFetch('/api/messages').then(r => r.json()),
       ]);
       setProfile(p);
-      setBio(b ? { ...defaultBio, ...b } : defaultBio);
+      setBio(mergeBio(b));
       setExperience(Array.isArray(e) ? e : []);
       setEducation(Array.isArray(ed) ? ed : []);
       setSkills(Array.isArray(s) ? s : []);
@@ -60,7 +69,13 @@ export default function Admin() {
     }
   }, []);
 
-  useEffect(() => { loadAll(); }, [loadAll]);
+  useEffect(() => { void loadAll(); }, [loadAll]);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+    };
+  }, []);
 
   const signOut = () => {
     playClickSound();
@@ -75,7 +90,7 @@ export default function Admin() {
     playClickSound();
     const body = profile?._id ? profile : { ...profile, _id: undefined };
     const res = await authFetch('/api/profile', { method: 'PUT', body: JSON.stringify(body) });
-    if (res.ok) { notify('Profile saved'); loadAll(); } else notify('Error saving profile');
+    if (res.ok) { notify('Profile saved'); void loadAll(); } else notify('Error saving profile');
   };
 
   const uploadAvatar = async (file: File) => {
@@ -83,7 +98,7 @@ export default function Admin() {
     const base64 = await fileToBase64(file);
     const res = await authFetch('/api/upload', { method: 'POST', body: JSON.stringify({ fileName: file.name, fileBase64: base64, contentType: file.type }) });
     const data = await res.json();
-    if (res.ok) setProfile((p: any) => ({ ...p, avatar_url: data.url }));
+    if (res.ok) setProfile(p => p ? { ...p, avatar_url: data.url } : p);
     else notify(data.error || 'Upload failed');
   };
 
@@ -91,7 +106,7 @@ export default function Admin() {
     e.preventDefault();
     playClickSound();
     const res = await authFetch('/api/bio', { method: 'PUT', body: JSON.stringify(bio) });
-    if (res.ok) { notify('Bio saved'); loadAll(); }
+    if (res.ok) { notify('Bio saved'); void loadAll(); }
     else {
       const data = await res.json().catch(() => ({}));
       notify(data.error || 'Error saving bio');
@@ -103,7 +118,7 @@ export default function Admin() {
     const base64 = await fileToBase64(file);
     const res = await authFetch('/api/upload', { method: 'POST', body: JSON.stringify({ fileName: file.name, fileBase64: base64, contentType: file.type }) });
     const data = await res.json();
-    if (res.ok) setBio((b: any) => ({ ...b, university_image_url: data.url }));
+    if (res.ok) setBio(b => ({ ...b, university_image_url: data.url }));
     else notify(data.error || 'Upload failed');
   };
 
@@ -112,7 +127,7 @@ export default function Admin() {
     const base64 = await fileToBase64(file);
     const res = await authFetch('/api/upload', { method: 'POST', body: JSON.stringify({ fileName: file.name, fileBase64: base64, contentType: file.type }) });
     const data = await res.json();
-    if (res.ok) setBio((b: any) => ({ ...b, career_image_url: data.url }));
+    if (res.ok) setBio(b => ({ ...b, career_image_url: data.url }));
     else notify(data.error || 'Upload failed');
   };
 
@@ -120,9 +135,9 @@ export default function Admin() {
   const addExperience = async () => {
     playClickSound();
     const res = await authFetch('/api/experience', { method: 'POST', body: JSON.stringify({ company: 'New Company', role: 'Role', period: '', points: [], icon: 'Briefcase', link: '' }) });
-    if (res.ok) { notify('Experience added'); loadAll(); }
+    if (res.ok) { notify('Experience added'); void loadAll(); }
   };
-  const updateExperience = async (item: any) => {
+  const updateExperience = async (item: Experience) => {
     playClickSound();
     const res = await authFetch('/api/experience', { method: 'PUT', body: JSON.stringify(item) });
     if (res.ok) notify('Saved'); else notify('Error');
@@ -130,16 +145,16 @@ export default function Admin() {
   const deleteExperience = async (_id: string) => {
     playClickSound();
     const res = await authFetch('/api/experience', { method: 'DELETE', body: JSON.stringify({ _id }) });
-    if (res.ok) { notify('Deleted'); loadAll(); }
+    if (res.ok) { notify('Deleted'); void loadAll(); }
   };
 
   // --- Education ---
   const addEducation = async () => {
     playClickSound();
     const res = await authFetch('/api/education', { method: 'POST', body: JSON.stringify({ institution: 'New Institution', degree: 'Degree', period: '', description: '', icon: 'GraduationCap', link: '' }) });
-    if (res.ok) { notify('Education added'); loadAll(); }
+    if (res.ok) { notify('Education added'); void loadAll(); }
   };
-  const updateEducation = async (item: any) => {
+  const updateEducation = async (item: Education) => {
     playClickSound();
     const res = await authFetch('/api/education', { method: 'PUT', body: JSON.stringify(item) });
     if (res.ok) notify('Saved'); else notify('Error');
@@ -147,7 +162,7 @@ export default function Admin() {
   const deleteEducation = async (_id: string) => {
     playClickSound();
     const res = await authFetch('/api/education', { method: 'DELETE', body: JSON.stringify({ _id }) });
-    if (res.ok) { notify('Deleted'); loadAll(); }
+    if (res.ok) { notify('Deleted'); void loadAll(); }
   };
 
   // --- Skills ---
@@ -156,21 +171,21 @@ export default function Admin() {
     playClickSound();
     if (!newSkill.category || !newSkill.name) return notify('Category and name required');
     const res = await authFetch('/api/skills', { method: 'POST', body: JSON.stringify(newSkill) });
-    if (res.ok) { notify('Skill added'); setNewSkill({ category: '', name: '' }); loadAll(); }
+    if (res.ok) { notify('Skill added'); setNewSkill({ category: '', name: '' }); void loadAll(); }
   };
   const deleteSkill = async (_id: string) => {
     playClickSound();
     const res = await authFetch('/api/skills', { method: 'DELETE', body: JSON.stringify({ _id }) });
-    if (res.ok) { notify('Deleted'); loadAll(); }
+    if (res.ok) { notify('Deleted'); void loadAll(); }
   };
 
   // --- Projects ---
   const addProject = async () => {
     playClickSound();
     const res = await authFetch('/api/projects', { method: 'POST', body: JSON.stringify({ title: 'New Project', description: '', image_url: '', images: [], live_url: '', github_url: '', tags: [], featured: true }) });
-    if (res.ok) { notify('Project added'); loadAll(); }
+    if (res.ok) { notify('Project added'); void loadAll(); }
   };
-  const updateProject = async (item: any) => {
+  const updateProject = async (item: Project) => {
     playClickSound();
     const res = await authFetch('/api/projects', { method: 'PUT', body: JSON.stringify(item) });
     if (res.ok) notify('Saved'); else notify('Error');
@@ -178,13 +193,15 @@ export default function Admin() {
   const deleteProject = async (_id: string) => {
     playClickSound();
     const res = await authFetch('/api/projects', { method: 'DELETE', body: JSON.stringify({ _id }) });
-    if (res.ok) { notify('Deleted'); loadAll(); }
+    if (res.ok) { notify('Deleted'); void loadAll(); }
   };
+  const projectImages = (p: Project) => (p.images && p.images.length ? p.images : p.image_url ? [p.image_url] : []);
+
   const uploadProjectImages = async (_id: string, files: File[]) => {
     playClickSound();
     try {
       const current = projects.find(p => p._id === _id);
-      const existing = current?.images && current.images.length ? current.images : (current?.image_url ? [current.image_url] : []);
+      const existing = projectImages(current ?? ({} as Project));
       const urls: string[] = [];
       for (const file of files) {
         const base64 = await fileToBase64(file);
@@ -202,7 +219,7 @@ export default function Admin() {
   const removeProjectImage = async (_id: string, url: string) => {
     playClickSound();
     const current = projects.find(p => p._id === _id);
-    const images = (current?.images && current.images.length ? current.images : (current?.image_url ? [current.image_url] : [])).filter((u: string) => u !== url);
+    const images = projectImages(current ?? ({} as Project)).filter(u => u !== url);
     setProjects(prev => prev.map(p => p._id === _id ? { ...p, images, image_url: images[0] || '' } : p));
     await authFetch('/api/projects', { method: 'PUT', body: JSON.stringify({ _id, images, image_url: images[0] || '' }) });
     notify('Image removed');
@@ -210,7 +227,7 @@ export default function Admin() {
   const moveProjectImage = async (_id: string, from: number, to: number) => {
     playClickSound();
     const current = projects.find(p => p._id === _id);
-    const images = [...(current?.images && current.images.length ? current.images : (current?.image_url ? [current.image_url] : []))];
+    const images = [...projectImages(current ?? ({} as Project))];
     if (to < 0 || to >= images.length) return;
     [images[from], images[to]] = [images[to], images[from]];
     setProjects(prev => prev.map(p => p._id === _id ? { ...p, images, image_url: images[0] || '' } : p));
@@ -221,7 +238,7 @@ export default function Admin() {
   const deleteMessage = async (_id: string) => {
     playClickSound();
     const res = await authFetch('/api/messages', { method: 'DELETE', body: JSON.stringify({ _id }) });
-    if (res.ok) { notify('Deleted'); loadAll(); }
+    if (res.ok) { notify('Deleted'); void loadAll(); }
   };
 
   if (loading) {
@@ -279,12 +296,12 @@ export default function Admin() {
           </form>
         )}
 
-        {tab === 'bio' && bio && (
+        {tab === 'bio' && (
           <form onSubmit={saveBio} className="max-w-2xl space-y-4 rounded-3xl border border-[var(--border)] bg-[var(--card)]/60 p-7">
             <Field label="Hero Title" value={bio.hero_title} onChange={v => setBio({ ...bio, hero_title: v })} />
             <div>
               <label className="mb-1.5 block text-xs font-medium text-[var(--fg-muted)]">Story Paragraphs (one per line)</label>
-              <textarea value={(bio.story_paragraphs || []).join('\n\n')} onChange={e => setBio({ ...bio, story_paragraphs: e.target.value.split('\n\n').map((p: string) => p.trim()).filter(Boolean) })} rows={5} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 px-4 py-3 text-sm outline-none focus:border-[var(--accent)]" />
+              <textarea value={bio.story_paragraphs.join('\n\n')} onChange={e => setBio({ ...bio, story_paragraphs: e.target.value.split('\n\n').map(p => p.trim()).filter(Boolean) })} rows={5} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 px-4 py-3 text-sm outline-none focus:border-[var(--accent)]" />
             </div>
             <Field label="University Section Title" value={bio.university_title} onChange={v => setBio({ ...bio, university_title: v })} />
             <div>
@@ -300,10 +317,10 @@ export default function Admin() {
             </div>
             <Field label="University Text (before GitHub links)" value={bio.university_text_before_links} onChange={v => setBio({ ...bio, university_text_before_links: v })} />
             <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="GitHub Link 1 Title" value={bio.university_links?.[0]?.title || ''} onChange={v => setBio({ ...bio, university_links: [{ ...(bio.university_links?.[0] || { title: '', url: '' }), title: v }, bio.university_links?.[1] || { title: '', url: '' }] })} />
-              <Field label="GitHub Link 1 URL" value={bio.university_links?.[0]?.url || ''} onChange={v => setBio({ ...bio, university_links: [{ ...(bio.university_links?.[0] || { title: '', url: '' }), url: v }, bio.university_links?.[1] || { title: '', url: '' }] })} />
-              <Field label="GitHub Link 2 Title" value={bio.university_links?.[1]?.title || ''} onChange={v => setBio({ ...bio, university_links: [bio.university_links?.[0] || { title: '', url: '' }, { ...(bio.university_links?.[1] || { title: '', url: '' }), title: v }] })} />
-              <Field label="GitHub Link 2 URL" value={bio.university_links?.[1]?.url || ''} onChange={v => setBio({ ...bio, university_links: [bio.university_links?.[0] || { title: '', url: '' }, { ...(bio.university_links?.[1] || { title: '', url: '' }), url: v }] })} />
+              <Field label="GitHub Link 1 Title" value={bio.university_links[0]?.title || ''} onChange={v => setBio({ ...bio, university_links: [{ ...(bio.university_links[0] || { title: '', url: '' }), title: v }, bio.university_links[1] || { title: '', url: '' }] })} />
+              <Field label="GitHub Link 1 URL" value={bio.university_links[0]?.url || ''} onChange={v => setBio({ ...bio, university_links: [{ ...(bio.university_links[0] || { title: '', url: '' }), url: v }, bio.university_links[1] || { title: '', url: '' }] })} />
+              <Field label="GitHub Link 2 Title" value={bio.university_links[1]?.title || ''} onChange={v => setBio({ ...bio, university_links: [bio.university_links[0] || { title: '', url: '' }, { ...(bio.university_links[1] || { title: '', url: '' }), title: v }] })} />
+              <Field label="GitHub Link 2 URL" value={bio.university_links[1]?.url || ''} onChange={v => setBio({ ...bio, university_links: [bio.university_links[0] || { title: '', url: '' }, { ...(bio.university_links[1] || { title: '', url: '' }), url: v }] })} />
             </div>
             <Field label="University Text (after GitHub links)" value={bio.university_text_after_links} onChange={v => setBio({ ...bio, university_text_after_links: v })} />
             <div className="grid gap-3 sm:grid-cols-2">
@@ -326,7 +343,7 @@ export default function Admin() {
               <label className="mb-1.5 block text-xs font-medium text-[var(--fg-muted)]">Career Story</label>
               <textarea value={bio.career_body || ''} onChange={e => setBio({ ...bio, career_body: e.target.value })} rows={5} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 px-4 py-3 text-sm outline-none focus:border-[var(--accent)]" />
             </div>
-            <Field label="Career Stack (comma separated)" value={(bio.career_stack || []).join(', ')} onChange={v => setBio({ ...bio, career_stack: v.split(',').map((t: string) => t.trim()).filter(Boolean) })} />
+            <Field label="Career Stack (comma separated)" value={bio.career_stack.join(', ')} onChange={v => setBio({ ...bio, career_stack: v.split(',').map(t => t.trim()).filter(Boolean) })} />
             <div>
               <label className="mb-1.5 block text-xs font-medium text-[var(--fg-muted)]">Ending</label>
               <textarea value={bio.ending || ''} onChange={e => setBio({ ...bio, ending: e.target.value })} rows={3} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 px-4 py-3 text-sm outline-none focus:border-[var(--accent)]" />
@@ -348,7 +365,7 @@ export default function Admin() {
                 <Field label="Company Link" value={exp.link || ''} onChange={v => setExperience(prev => prev.map((x, idx) => idx === i ? { ...x, link: v } : x))} />
                 <div>
                   <label className="mb-1.5 block text-xs font-medium text-[var(--fg-muted)]">Points (one per line)</label>
-                  <textarea value={(exp.points || []).join('\n')} onChange={e => setExperience(prev => prev.map((x, idx) => idx === i ? { ...x, points: e.target.value.split('\n') } : x))} rows={4} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 px-4 py-3 text-sm outline-none focus:border-[var(--accent)]" />
+                  <textarea value={exp.points.join('\n')} onChange={e => setExperience(prev => prev.map((x, idx) => idx === i ? { ...x, points: e.target.value.split('\n') } : x))} rows={4} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 px-4 py-3 text-sm outline-none focus:border-[var(--accent)]" />
                 </div>
                 <div className="flex gap-2">
                   <button onClick={() => updateExperience(exp)} className="flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-semibold text-[var(--accent-contrast)] hover:brightness-110"><Save size={12} /> Save</button>
@@ -403,54 +420,54 @@ export default function Admin() {
           <div className="space-y-5">
             <button onClick={addProject} className="flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast)] hover:brightness-110"><Plus size={15} /> Add Project</button>
             {projects.map((p, i) => {
-              const projectImages = p.images && p.images.length ? p.images : (p.image_url ? [p.image_url] : []);
+              const images = projectImages(p);
               return (
-              <div key={p._id} className="rounded-3xl border border-[var(--border)] bg-[var(--card)]/60 p-6 space-y-3">
-                <div className="flex flex-wrap items-start gap-4">
-                  {projectImages.map((url: string, idx: number) => (
-                    <div key={url} className="relative">
-                      <img src={url} className="h-20 w-28 rounded-xl object-cover border border-[var(--border)]" />
-                      <button onClick={() => removeProjectImage(p._id, url)} title="Remove image" className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-white shadow hover:bg-rose-400">
-                        <Trash2 size={11} />
-                      </button>
-                      {projectImages.length > 1 && (
-                        <div className="mt-1.5 flex items-center justify-center gap-1.5">
-                          <button onClick={() => moveProjectImage(p._id, idx, idx - 1)} disabled={idx === 0} title="Move earlier" className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--border)] text-[var(--fg-muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-30">
-                            <ChevronLeft size={12} />
-                          </button>
-                          <button onClick={() => moveProjectImage(p._id, idx, idx + 1)} disabled={idx === projectImages.length - 1} title="Move later" className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--border)] text-[var(--fg-muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-30">
-                            <ChevronRight size={12} />
-                          </button>
-                        </div>
-                      )}
+                <div key={p._id} className="rounded-3xl border border-[var(--border)] bg-[var(--card)]/60 p-6 space-y-3">
+                  <div className="flex flex-wrap items-start gap-4">
+                    {images.map((url: string, idx: number) => (
+                      <div key={url} className="relative">
+                        <img src={url} alt="" className="h-20 w-28 rounded-xl object-cover border border-[var(--border)]" />
+                        <button onClick={() => removeProjectImage(p._id, url)} title="Remove image" className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-white shadow hover:bg-rose-400">
+                          <Trash2 size={11} />
+                        </button>
+                        {images.length > 1 && (
+                          <div className="mt-1.5 flex items-center justify-center gap-1.5">
+                            <button onClick={() => moveProjectImage(p._id, idx, idx - 1)} disabled={idx === 0} title="Move earlier" className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--border)] text-[var(--fg-muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-30">
+                              <ChevronLeft size={12} />
+                            </button>
+                            <button onClick={() => moveProjectImage(p._id, idx, idx + 1)} disabled={idx === images.length - 1} title="Move later" className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--border)] text-[var(--fg-muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-30">
+                              <ChevronRight size={12} />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    <label className="flex h-fit cursor-pointer items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold hover:border-[var(--accent)]/60">
+                      <Upload size={13} /> Upload Images
+                      <input type="file" accept="image/*" multiple className="hidden" onChange={e => e.target.files && e.target.files.length > 0 && uploadProjectImages(p._id, Array.from(e.target.files))} />
+                    </label>
+                  </div>
+                  <Field label="Title" value={p.title} onChange={v => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, title: v } : x))} />
+                  <div>
+                    <label className="mb-1.5 block text-xs font-medium text-[var(--fg-muted)]">Description</label>
+                    <textarea value={p.description || ''} onChange={e => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, description: e.target.value } : x))} rows={3} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 px-4 py-3 text-sm outline-none focus:border-[var(--accent)]" />
+                  </div>
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="relative">
+                      <ExternalLink size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-muted)]" />
+                      <input placeholder="Live URL" value={p.live_url || ''} onChange={e => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, live_url: e.target.value } : x))} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-[var(--accent)]" />
                     </div>
-                  ))}
-                  <label className="flex h-fit cursor-pointer items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold hover:border-[var(--accent)]/60">
-                    <Upload size={13} /> Upload Images
-                    <input type="file" accept="image/*" multiple className="hidden" onChange={e => e.target.files && e.target.files.length > 0 && uploadProjectImages(p._id, Array.from(e.target.files))} />
-                  </label>
-                </div>
-                <Field label="Title" value={p.title} onChange={v => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, title: v } : x))} />
-                <div>
-                  <label className="mb-1.5 block text-xs font-medium text-[var(--fg-muted)]">Description</label>
-                  <textarea value={p.description || ''} onChange={e => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, description: e.target.value } : x))} rows={3} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 px-4 py-3 text-sm outline-none focus:border-[var(--accent)]" />
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="relative">
-                    <ExternalLink size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-muted)]" />
-                    <input placeholder="Live URL" value={p.live_url || ''} onChange={e => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, live_url: e.target.value } : x))} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-[var(--accent)]" />
+                    <div className="relative">
+                      <Github size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-muted)]" />
+                      <input placeholder="GitHub URL" value={p.github_url || ''} onChange={e => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, github_url: e.target.value } : x))} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-[var(--accent)]" />
+                    </div>
                   </div>
-                  <div className="relative">
-                    <Github size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--fg-muted)]" />
-                    <input placeholder="GitHub URL" value={p.github_url || ''} onChange={e => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, github_url: e.target.value } : x))} className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)]/60 py-2.5 pl-9 pr-3 text-sm outline-none focus:border-[var(--accent)]" />
+                  <Field label="Tags (comma separated)" value={p.tags.join(', ')} onChange={v => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, tags: v.split(',').map(t => t.trim()).filter(Boolean) } : x))} />
+                  <div className="flex gap-2">
+                    <button onClick={() => updateProject(p)} className="flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-semibold text-[var(--accent-contrast)] hover:brightness-110"><Save size={12} /> Save</button>
+                    <button onClick={() => deleteProject(p._id)} className="flex items-center gap-1.5 rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-rose-400 hover:border-rose-400"><Trash2 size={12} /> Delete</button>
                   </div>
                 </div>
-                <Field label="Tags (comma separated)" value={(p.tags || []).join(', ')} onChange={v => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, tags: v.split(',').map((t: string) => t.trim()).filter(Boolean) } : x))} />
-                <div className="flex gap-2">
-                  <button onClick={() => updateProject(p)} className="flex items-center gap-1.5 rounded-full bg-[var(--accent)] px-4 py-2 text-xs font-semibold text-[var(--accent-contrast)] hover:brightness-110"><Save size={12} /> Save</button>
-                  <button onClick={() => deleteProject(p._id)} className="flex items-center gap-1.5 rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-rose-400 hover:border-rose-400"><Trash2 size={12} /> Delete</button>
-                </div>
-              </div>
               );
             })}
           </div>

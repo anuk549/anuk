@@ -1,5 +1,6 @@
 import Section, { SectionBody } from './Section';
-import ProjectCard, { type Project } from './ProjectCard';
+import ProjectCard from './ProjectCard';
+import type { Project } from '../lib/types';
 
 export default function Projects({ items }: { items: Project[] }) {
   return (

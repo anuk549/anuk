@@ -1,6 +1,5 @@
 import { techMeta } from '../lib/icons';
-
-interface Tech { id: number; name: string; slug: string; }
+import type { Tech } from '../lib/types';
 
 function Row({ items }: { items: Tech[] }) {
   const loop = [...items, ...items];
@@ -9,7 +8,7 @@ function Row({ items }: { items: Tech[] }) {
       {loop.map((t, i) => {
         const meta = techMeta[t.name] || { slug: t.slug, color: 'FFFFFF' };
         return (
-          <div key={`${t.id}-${i}`} className="flex items-center gap-3 whitespace-nowrap">
+          <div key={`${t._id}-${i}`} className="flex items-center gap-3 whitespace-nowrap">
             <img
               src={`https://cdn.simpleicons.org/${meta.slug}/${meta.color}`}
               alt={t.name}

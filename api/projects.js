@@ -1,14 +1,9 @@
-import { getDb, ObjectId } from './_lib/db-mongo.js';
+import { getDb } from './_lib/db-mongo.js';
 import { requireAuth } from './_lib/auth.js';
+import { toObjectId, pick, asArray, asBoolean } from './_lib/helpers.js';
 import { applyCors, handlePreflight, sendError, setNoStore, setPublicCache } from './_lib/http.js';
 
-function toObjectId(id) {
-  if (!id) return id;
-  if (ObjectId.isValid(id)) {
-    return new ObjectId(id);
-  }
-  return id;
-}
+const ALLOWED_FIELDS = ['title', 'description', 'image_url', 'images', 'live_url', 'github_url', 'tags', 'featured'];
 
 export default async function handler(req, res) {
   applyCors(req, res, 'GET, POST, PUT, DELETE, OPTIONS');
@@ -26,13 +21,12 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { title, description, image_url, live_url, github_url, tags, featured } = req.body;
-      if (!title) return res.status(400).json({ error: 'title is required' });
+      const doc = pick(req.body, ALLOWED_FIELDS);
+      if (!doc.title) return res.status(400).json({ error: 'title is required' });
+      doc.tags = asArray(doc.tags);
+      doc.featured = asBoolean(doc.featured);
       await col.updateMany({}, { $inc: { order_index: 1 } });
-      const doc = {
-        title, description, image_url, live_url, github_url,
-        tags: tags || [], featured: !!featured, order_index: 0,
-      };
+      doc.order_index = 0;
       const result = await col.insertOne(doc);
       const inserted = await col.findOne({ _id: result.insertedId });
       return res.status(201).json(inserted);
@@ -40,16 +34,19 @@ export default async function handler(req, res) {
     if (req.method === 'PUT') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { _id, ...rest } = req.body;
+      const { _id } = req.body || {};
       if (!_id) return res.status(400).json({ error: '_id is required' });
-      await col.updateOne({ _id: toObjectId(_id) }, { $set: rest });
+      const updates = pick(req.body, ALLOWED_FIELDS);
+      if ('tags' in updates) updates.tags = asArray(updates.tags);
+      if ('featured' in updates) updates.featured = asBoolean(updates.featured);
+      await col.updateOne({ _id: toObjectId(_id) }, { $set: updates });
       const updated = await col.findOne({ _id: toObjectId(_id) });
       return res.status(200).json(updated);
     }
     if (req.method === 'DELETE') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { _id } = req.body;
+      const { _id } = req.body || {};
       if (!_id) return res.status(400).json({ error: '_id is required' });
       const result = await col.deleteOne({ _id: toObjectId(_id) });
       if (result.deletedCount === 0) return res.status(404).json({ error: 'Not found' });

@@ -2,20 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ExternalLink, Github, ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { playClickSound } from '../lib/sound';
-
-export interface Project {
-  _id: string;
-  key?: string;
-  title: string;
-  description: string;
-  image_url: string;
-  images?: string[];
-  live_url: string;
-  github_url: string;
-  tags: string[];
-  featured?: boolean;
-  order_index?: number;
-}
+import type { Project } from '../lib/types';
 
 export default function ProjectCard({ p, index }: { p: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);

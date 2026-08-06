@@ -1,8 +1,28 @@
 import { getDb } from './_lib/db-mongo.js';
 import { requireAuth } from './_lib/auth.js';
+import { pick } from './_lib/helpers.js';
 import { applyCors, handlePreflight, sendError, setNoStore, setPublicCache } from './_lib/http.js';
 
 const BIO_ID = 'bio';
+
+const ALLOWED_FIELDS = [
+  'hero_title',
+  'story_paragraphs',
+  'university_title',
+  'university_intro',
+  'university_image_url',
+  'university_text_before_links',
+  'university_links',
+  'university_text_after_links',
+  'career_period',
+  'career_role',
+  'career_company',
+  'career_intro',
+  'career_image_url',
+  'career_body',
+  'career_stack',
+  'ending',
+];
 
 export default async function handler(req, res) {
   applyCors(req, res, 'GET, PUT, OPTIONS');
@@ -20,10 +40,9 @@ export default async function handler(req, res) {
     if (req.method === 'PUT') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { _id: _ignored, ...rest } = req.body || {};
       await col.updateOne(
         { _id: BIO_ID },
-        { $set: { ...rest, _id: BIO_ID, updated_at: new Date().toISOString() } },
+        { $set: { ...pick(req.body, ALLOWED_FIELDS), _id: BIO_ID, updated_at: new Date().toISOString() } },
         { upsert: true }
       );
       const updated = await col.findOne({ _id: BIO_ID });

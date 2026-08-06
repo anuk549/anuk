@@ -9,13 +9,10 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue>({ token: null, loading: true, setToken: () => {} });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('admin_token'));
+  const [loading] = useState(false);
 
   useEffect(() => {
-    setToken(localStorage.getItem('admin_token'));
-    setLoading(false);
-
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'admin_token') setToken(e.newValue);
     };

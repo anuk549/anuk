@@ -28,9 +28,9 @@ export default function Login() {
       localStorage.setItem('admin_token', data.token);
       setToken(data.token);
       navigate('/admin');
-    } catch (err: any) {
+    } catch (err) {
       setLoading(false);
-      setError(err.message || 'Network error');
+      setError(err instanceof Error ? err.message : 'Network error');
     }
   };
 

@@ -11,15 +11,16 @@ import Projects from '../components/Projects';
 import Contact from '../components/Contact';
 import Footer from '../components/Footer';
 import CustomCursor from '../components/CustomCursor';
+import type { Profile, Experience as ExperienceItem, Education as EducationItem, Skill, Project, Tech } from '../lib/types';
 
 export default function Home() {
   const [loading, setLoading] = useState(true);
-  const [profile, setProfile] = useState<any>(null);
-  const [experience, setExperience] = useState<any[]>([]);
-  const [education, setEducation] = useState<any[]>([]);
-  const [skills, setSkills] = useState<any[]>([]);
-  const [projects, setProjects] = useState<any[]>([]);
-  const [tech, setTech] = useState<any[]>([]);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [experience, setExperience] = useState<ExperienceItem[]>([]);
+  const [education, setEducation] = useState<EducationItem[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [tech, setTech] = useState<Tech[]>([]);
   const [error, setError] = useState(false);
 
   useEffect(() => {

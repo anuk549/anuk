@@ -1,14 +1,9 @@
-import { getDb, ObjectId } from './_lib/db-mongo.js';
+import { getDb } from './_lib/db-mongo.js';
 import { requireAuth } from './_lib/auth.js';
+import { toObjectId, pick } from './_lib/helpers.js';
 import { applyCors, handlePreflight, sendError, setNoStore, setPublicCache } from './_lib/http.js';
 
-function toObjectId(id) {
-  if (!id) return id;
-  if (ObjectId.isValid(id)) {
-    return new ObjectId(id);
-  }
-  return id;
-}
+const ALLOWED_FIELDS = ['institution', 'degree', 'period', 'description', 'icon', 'link'];
 
 export default async function handler(req, res) {
   applyCors(req, res, 'GET, POST, PUT, DELETE, OPTIONS');
@@ -26,10 +21,12 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { institution, degree, period, description, icon, link } = req.body;
-      if (!institution || !degree) return res.status(400).json({ error: 'institution and degree are required' });
+      const doc = pick(req.body, ALLOWED_FIELDS);
+      if (!doc.institution || !doc.degree) return res.status(400).json({ error: 'institution and degree are required' });
+      doc.icon = doc.icon || 'GraduationCap';
+      doc.link = doc.link || '';
       await col.updateMany({}, { $inc: { order_index: 1 } });
-      const doc = { institution, degree, period, description, icon: icon || 'GraduationCap', order_index: 0, link: link || '' };
+      doc.order_index = 0;
       const result = await col.insertOne(doc);
       const inserted = await col.findOne({ _id: result.insertedId });
       return res.status(201).json(inserted);
@@ -37,16 +34,16 @@ export default async function handler(req, res) {
     if (req.method === 'PUT') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { _id, ...rest } = req.body;
+      const { _id } = req.body || {};
       if (!_id) return res.status(400).json({ error: '_id is required' });
-      await col.updateOne({ _id: toObjectId(_id) }, { $set: rest });
+      await col.updateOne({ _id: toObjectId(_id) }, { $set: pick(req.body, ALLOWED_FIELDS) });
       const updated = await col.findOne({ _id: toObjectId(_id) });
       return res.status(200).json(updated);
     }
     if (req.method === 'DELETE') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { _id } = req.body;
+      const { _id } = req.body || {};
       if (!_id) return res.status(400).json({ error: '_id is required' });
       const result = await col.deleteOne({ _id: toObjectId(_id) });
       if (result.deletedCount === 0) return res.status(404).json({ error: 'Not found' });
