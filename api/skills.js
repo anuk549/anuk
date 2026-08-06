@@ -26,9 +26,10 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { category, name, order_index } = req.body;
+      const { category, name } = req.body;
       if (!category || !name) return res.status(400).json({ error: 'category and name are required' });
-      const doc = { category, name, order_index: order_index || 0 };
+      await col.updateMany({}, { $inc: { order_index: 1 } });
+      const doc = { category, name, order_index: 0 };
       const result = await col.insertOne(doc);
       const inserted = await col.findOne({ _id: result.insertedId });
       return res.status(201).json(inserted);

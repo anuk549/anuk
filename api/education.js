@@ -26,9 +26,10 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { institution, degree, period, description, icon, order_index, link } = req.body;
+      const { institution, degree, period, description, icon, link } = req.body;
       if (!institution || !degree) return res.status(400).json({ error: 'institution and degree are required' });
-      const doc = { institution, degree, period, description, icon: icon || 'GraduationCap', order_index: order_index || 0, link: link || '' };
+      await col.updateMany({}, { $inc: { order_index: 1 } });
+      const doc = { institution, degree, period, description, icon: icon || 'GraduationCap', order_index: 0, link: link || '' };
       const result = await col.insertOne(doc);
       const inserted = await col.findOne({ _id: result.insertedId });
       return res.status(201).json(inserted);

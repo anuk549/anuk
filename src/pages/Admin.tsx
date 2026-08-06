@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { LogOut, Plus, Trash2, Save, Upload, User, Briefcase, GraduationCap, Code2, FolderKanban, Mail, ExternalLink, Github, BookOpen } from 'lucide-react';
+import { LogOut, Plus, Trash2, Save, Upload, User, Briefcase, GraduationCap, Code2, FolderKanban, Mail, ExternalLink, Github, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 import { authFetch } from '../lib/api';
 import { useAuth } from '../contexts/AuthContext';
 import Loading from '../components/Loading';
@@ -119,7 +119,7 @@ export default function Admin() {
   // --- Experience ---
   const addExperience = async () => {
     playClickSound();
-    const res = await authFetch('/api/experience', { method: 'POST', body: JSON.stringify({ company: 'New Company', role: 'Role', period: '', points: [], icon: 'Briefcase', link: '', order_index: experience.length + 1 }) });
+    const res = await authFetch('/api/experience', { method: 'POST', body: JSON.stringify({ company: 'New Company', role: 'Role', period: '', points: [], icon: 'Briefcase', link: '' }) });
     if (res.ok) { notify('Experience added'); loadAll(); }
   };
   const updateExperience = async (item: any) => {
@@ -136,7 +136,7 @@ export default function Admin() {
   // --- Education ---
   const addEducation = async () => {
     playClickSound();
-    const res = await authFetch('/api/education', { method: 'POST', body: JSON.stringify({ institution: 'New Institution', degree: 'Degree', period: '', description: '', icon: 'GraduationCap', link: '', order_index: education.length + 1 }) });
+    const res = await authFetch('/api/education', { method: 'POST', body: JSON.stringify({ institution: 'New Institution', degree: 'Degree', period: '', description: '', icon: 'GraduationCap', link: '' }) });
     if (res.ok) { notify('Education added'); loadAll(); }
   };
   const updateEducation = async (item: any) => {
@@ -167,7 +167,7 @@ export default function Admin() {
   // --- Projects ---
   const addProject = async () => {
     playClickSound();
-    const res = await authFetch('/api/projects', { method: 'POST', body: JSON.stringify({ title: 'New Project', description: '', image_url: '', live_url: '', github_url: '', tags: [], featured: true, order_index: projects.length + 1 }) });
+    const res = await authFetch('/api/projects', { method: 'POST', body: JSON.stringify({ title: 'New Project', description: '', image_url: '', images: [], live_url: '', github_url: '', tags: [], featured: true }) });
     if (res.ok) { notify('Project added'); loadAll(); }
   };
   const updateProject = async (item: any) => {
@@ -180,16 +180,42 @@ export default function Admin() {
     const res = await authFetch('/api/projects', { method: 'DELETE', body: JSON.stringify({ _id }) });
     if (res.ok) { notify('Deleted'); loadAll(); }
   };
-  const uploadProjectImage = async (_id: string, file: File) => {
+  const uploadProjectImages = async (_id: string, files: File[]) => {
     playClickSound();
-    const base64 = await fileToBase64(file);
-    const res = await authFetch('/api/upload', { method: 'POST', body: JSON.stringify({ fileName: file.name, fileBase64: base64, contentType: file.type }) });
-    const data = await res.json();
-    if (res.ok) {
-      setProjects(prev => prev.map(p => p._id === _id ? { ...p, image_url: data.url } : p));
-      await authFetch('/api/projects', { method: 'PUT', body: JSON.stringify({ _id, image_url: data.url }) });
-      notify('Image uploaded');
-    } else notify(data.error || 'Upload failed');
+    try {
+      const current = projects.find(p => p._id === _id);
+      const existing = current?.images && current.images.length ? current.images : (current?.image_url ? [current.image_url] : []);
+      const urls: string[] = [];
+      for (const file of files) {
+        const base64 = await fileToBase64(file);
+        const res = await authFetch('/api/upload', { method: 'POST', body: JSON.stringify({ fileName: file.name, fileBase64: base64, contentType: file.type }) });
+        const data = await res.json();
+        if (!res.ok) { notify(data.error || 'Upload failed'); return; }
+        urls.push(data.url);
+      }
+      const images = [...existing, ...urls];
+      setProjects(prev => prev.map(p => p._id === _id ? { ...p, images, image_url: images[0] || '' } : p));
+      await authFetch('/api/projects', { method: 'PUT', body: JSON.stringify({ _id, images, image_url: images[0] || '' }) });
+      notify(urls.length > 1 ? 'Images uploaded' : 'Image uploaded');
+    } catch { notify('Upload failed'); }
+  };
+  const removeProjectImage = async (_id: string, url: string) => {
+    playClickSound();
+    const current = projects.find(p => p._id === _id);
+    const images = (current?.images && current.images.length ? current.images : (current?.image_url ? [current.image_url] : [])).filter((u: string) => u !== url);
+    setProjects(prev => prev.map(p => p._id === _id ? { ...p, images, image_url: images[0] || '' } : p));
+    await authFetch('/api/projects', { method: 'PUT', body: JSON.stringify({ _id, images, image_url: images[0] || '' }) });
+    notify('Image removed');
+  };
+  const moveProjectImage = async (_id: string, from: number, to: number) => {
+    playClickSound();
+    const current = projects.find(p => p._id === _id);
+    const images = [...(current?.images && current.images.length ? current.images : (current?.image_url ? [current.image_url] : []))];
+    if (to < 0 || to >= images.length) return;
+    [images[from], images[to]] = [images[to], images[from]];
+    setProjects(prev => prev.map(p => p._id === _id ? { ...p, images, image_url: images[0] || '' } : p));
+    await authFetch('/api/projects', { method: 'PUT', body: JSON.stringify({ _id, images, image_url: images[0] || '' }) });
+    notify('Image order updated');
   };
 
   const deleteMessage = async (_id: string) => {
@@ -376,13 +402,32 @@ export default function Admin() {
         {tab === 'projects' && (
           <div className="space-y-5">
             <button onClick={addProject} className="flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast)] hover:brightness-110"><Plus size={15} /> Add Project</button>
-            {projects.map((p, i) => (
+            {projects.map((p, i) => {
+              const projectImages = p.images && p.images.length ? p.images : (p.image_url ? [p.image_url] : []);
+              return (
               <div key={p._id} className="rounded-3xl border border-[var(--border)] bg-[var(--card)]/60 p-6 space-y-3">
-                <div className="flex gap-4">
-                  <img src={p.image_url || '/avatar.png'} className="h-20 w-28 rounded-xl object-cover border border-[var(--border)]" />
+                <div className="flex flex-wrap items-start gap-4">
+                  {projectImages.map((url: string, idx: number) => (
+                    <div key={url} className="relative">
+                      <img src={url} className="h-20 w-28 rounded-xl object-cover border border-[var(--border)]" />
+                      <button onClick={() => removeProjectImage(p._id, url)} title="Remove image" className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-rose-500 text-white shadow hover:bg-rose-400">
+                        <Trash2 size={11} />
+                      </button>
+                      {projectImages.length > 1 && (
+                        <div className="mt-1.5 flex items-center justify-center gap-1.5">
+                          <button onClick={() => moveProjectImage(p._id, idx, idx - 1)} disabled={idx === 0} title="Move earlier" className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--border)] text-[var(--fg-muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-30">
+                            <ChevronLeft size={12} />
+                          </button>
+                          <button onClick={() => moveProjectImage(p._id, idx, idx + 1)} disabled={idx === projectImages.length - 1} title="Move later" className="flex h-6 w-6 items-center justify-center rounded-full border border-[var(--border)] text-[var(--fg-muted)] transition hover:border-[var(--accent)] hover:text-[var(--accent)] disabled:cursor-not-allowed disabled:opacity-30">
+                            <ChevronRight size={12} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                   <label className="flex h-fit cursor-pointer items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold hover:border-[var(--accent)]/60">
-                    <Upload size={13} /> Upload Image
-                    <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadProjectImage(p._id, e.target.files[0])} />
+                    <Upload size={13} /> Upload Images
+                    <input type="file" accept="image/*" multiple className="hidden" onChange={e => e.target.files && e.target.files.length > 0 && uploadProjectImages(p._id, Array.from(e.target.files))} />
                   </label>
                 </div>
                 <Field label="Title" value={p.title} onChange={v => setProjects(prev => prev.map((x, idx) => idx === i ? { ...x, title: v } : x))} />
@@ -406,7 +451,8 @@ export default function Admin() {
                   <button onClick={() => deleteProject(p._id)} className="flex items-center gap-1.5 rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold text-rose-400 hover:border-rose-400"><Trash2 size={12} /> Delete</button>
                 </div>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
 

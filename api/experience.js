@@ -26,9 +26,10 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { company, role, period, points, icon, order_index, link } = req.body;
+      const { company, role, period, points, icon, link } = req.body;
       if (!company || !role) return res.status(400).json({ error: 'company and role are required' });
-      const doc = { company, role, period, points: points || [], icon: icon || 'Briefcase', order_index: order_index || 0, link: link || '' };
+      await col.updateMany({}, { $inc: { order_index: 1 } });
+      const doc = { company, role, period, points: points || [], icon: icon || 'Briefcase', order_index: 0, link: link || '' };
       const result = await col.insertOne(doc);
       const inserted = await col.findOne({ _id: result.insertedId });
       return res.status(201).json(inserted);

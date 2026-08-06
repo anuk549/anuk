@@ -26,11 +26,12 @@ export default async function handler(req, res) {
     if (req.method === 'POST') {
       setNoStore(res);
       if (!requireAuth(req, res)) return;
-      const { title, description, image_url, live_url, github_url, tags, featured, order_index } = req.body;
+      const { title, description, image_url, live_url, github_url, tags, featured } = req.body;
       if (!title) return res.status(400).json({ error: 'title is required' });
+      await col.updateMany({}, { $inc: { order_index: 1 } });
       const doc = {
         title, description, image_url, live_url, github_url,
-        tags: tags || [], featured: !!featured, order_index: order_index || 0,
+        tags: tags || [], featured: !!featured, order_index: 0,
       };
       const result = await col.insertOne(doc);
       const inserted = await col.findOne({ _id: result.insertedId });
