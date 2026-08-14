@@ -13,7 +13,7 @@ const links = [
   { href: '#contact', label: 'Contact', n: '06' },
 ];
 
-export default function Navbar() {
+export default function Navbar({ logoUrl }: { logoUrl?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [muted, setMuted] = useState(getMuteState());
@@ -42,7 +42,11 @@ export default function Navbar() {
       <div className="mx-auto max-w-6xl px-5">
         <div className={`flex items-center justify-between rounded-full border px-3 py-2 transition-all duration-500 ${scrolled ? 'border-[var(--border)] bg-[var(--card)]/85 backdrop-blur-xl shadow-[0_10px_36px_rgba(0,0,0,0.12)]' : 'border-[var(--border)]/60 bg-[var(--card)]/40 backdrop-blur-sm'}`}>
           <a href="#top" onClick={playClickSound} className="flex items-center gap-2 pl-2 font-heading text-[16px] italic font-semibold tracking-tight text-[var(--fg)]">
-            <span className="flex h-2 w-2 rounded-full bg-[var(--accent)]" />
+            {logoUrl ? (
+              <img src={logoUrl} alt="logo" className="h-8 w-8 rounded-lg object-cover" />
+            ) : (
+              <span className="flex h-2 w-2 rounded-full bg-[var(--accent)]" />
+            )}
             anuk<span className="text-[var(--accent)] not-italic">.h</span>
           </a>
           <nav className="hidden md:flex items-center gap-1">

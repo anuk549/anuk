@@ -102,6 +102,20 @@ export default function Admin() {
     else notify(data.error || 'Upload failed');
   };
 
+  const uploadImage = async (file: File): Promise<string | null> => {
+    playClickSound();
+    const base64 = await fileToBase64(file);
+    const res = await authFetch('/api/upload', { method: 'POST', body: JSON.stringify({ fileName: file.name, fileBase64: base64, contentType: file.type }) });
+    const data = await res.json();
+    if (!res.ok) { notify(data.error || 'Upload failed'); return null; }
+    return data.url as string;
+  };
+
+  const uploadLogo = async (file: File) => {
+    const url = await uploadImage(file);
+    if (url) setProfile(p => p ? { ...p, logo_url: url } : p);
+  };
+
   const saveBio = async (e: React.FormEvent) => {
     e.preventDefault();
     playClickSound();
@@ -148,6 +162,11 @@ export default function Admin() {
     if (res.ok) { notify('Deleted'); void loadAll(); }
   };
 
+  const uploadExperienceLogo = async (i: number, file: File) => {
+    const url = await uploadImage(file);
+    if (url) setExperience(prev => prev.map((x, idx) => idx === i ? { ...x, logo_url: url } : x));
+  };
+
   // --- Education ---
   const addEducation = async () => {
     playClickSound();
@@ -163,6 +182,11 @@ export default function Admin() {
     playClickSound();
     const res = await authFetch('/api/education', { method: 'DELETE', body: JSON.stringify({ _id }) });
     if (res.ok) { notify('Deleted'); void loadAll(); }
+  };
+
+  const uploadEducationLogo = async (i: number, file: File) => {
+    const url = await uploadImage(file);
+    if (url) setEducation(prev => prev.map((x, idx) => idx === i ? { ...x, logo_url: url } : x));
   };
 
   // --- Skills ---
@@ -282,6 +306,13 @@ export default function Admin() {
                 <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadAvatar(e.target.files[0])} />
               </label>
             </div>
+            <div className="flex items-center gap-4">
+              <img src={profile.logo_url || '/avatar.png'} alt="logo" className="h-16 w-16 rounded-2xl object-cover border border-[var(--border)]" />
+              <label className="flex cursor-pointer items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold hover:border-[var(--accent)]/60">
+                <Upload size={13} /> Upload Logo
+                <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadLogo(e.target.files[0])} />
+              </label>
+            </div>
             <Field label="Full Name" value={profile.full_name} onChange={v => setProfile({ ...profile, full_name: v })} />
             <Field label="Title" value={profile.title} onChange={v => setProfile({ ...profile, title: v })} />
             <Field label="Phone" value={profile.phone} onChange={v => setProfile({ ...profile, phone: v })} />
@@ -357,6 +388,13 @@ export default function Admin() {
             <button onClick={addExperience} className="flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast)] hover:brightness-110"><Plus size={15} /> Add Experience</button>
             {experience.map((exp, i) => (
               <div key={exp._id} className="rounded-3xl border border-[var(--border)] bg-[var(--card)]/60 p-6 space-y-3">
+                <div className="flex items-center gap-4">
+                  <img src={exp.logo_url || '/avatar.png'} alt="company logo" className="h-14 w-14 rounded-xl object-cover border border-[var(--border)]" />
+                  <label className="flex h-fit cursor-pointer items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold hover:border-[var(--accent)]/60">
+                    <Upload size={13} /> Upload Logo
+                    <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadExperienceLogo(i, e.target.files[0])} />
+                  </label>
+                </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   <Field label="Company" value={exp.company} onChange={v => setExperience(prev => prev.map((x, idx) => idx === i ? { ...x, company: v } : x))} />
                   <Field label="Role" value={exp.role} onChange={v => setExperience(prev => prev.map((x, idx) => idx === i ? { ...x, role: v } : x))} />
@@ -381,6 +419,13 @@ export default function Admin() {
             <button onClick={addEducation} className="flex items-center gap-2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-[var(--accent-contrast)] hover:brightness-110"><Plus size={15} /> Add Education</button>
             {education.map((edu, i) => (
               <div key={edu._id} className="rounded-3xl border border-[var(--border)] bg-[var(--card)]/60 p-6 space-y-3">
+                <div className="flex items-center gap-4">
+                  <img src={edu.logo_url || '/avatar.png'} alt="institution logo" className="h-14 w-14 rounded-xl object-cover border border-[var(--border)]" />
+                  <label className="flex h-fit cursor-pointer items-center gap-2 rounded-full border border-[var(--border)] px-4 py-2 text-xs font-semibold hover:border-[var(--accent)]/60">
+                    <Upload size={13} /> Upload Logo
+                    <input type="file" accept="image/*" className="hidden" onChange={e => e.target.files?.[0] && uploadEducationLogo(i, e.target.files[0])} />
+                  </label>
+                </div>
                 <Field label="Institution" value={edu.institution} onChange={v => setEducation(prev => prev.map((x, idx) => idx === i ? { ...x, institution: v } : x))} />
                 <Field label="Degree" value={edu.degree} onChange={v => setEducation(prev => prev.map((x, idx) => idx === i ? { ...x, degree: v } : x))} />
                 <Field label="Period" value={edu.period} onChange={v => setEducation(prev => prev.map((x, idx) => idx === i ? { ...x, period: v } : x))} />

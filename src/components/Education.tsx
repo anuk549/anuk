@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import Section, { SectionBody } from './Section';
 import { getIcon } from '../lib/icons';
 
-interface Edu { _id: string; institution: string; degree: string; period: string; description: string; icon: string; link?: string; }
+interface Edu { _id: string; institution: string; degree: string; period: string; description: string; icon: string; link?: string; logo_url?: string; }
 
 export default function Education({ items }: { items: Edu[] }) {
   return (
@@ -21,9 +21,13 @@ export default function Education({ items }: { items: Edu[] }) {
                 transition={{ duration: 0.55, delay: i * 0.08 }}
                 className="rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-7 transition hover:-translate-y-1 hover:border-[var(--accent-2)]/60"
               >
-                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--accent-2)] text-white">
-                  <Icon size={20} />
-                </div>
+                {edu.logo_url ? (
+                  <img src={edu.logo_url} alt={`${edu.institution} logo`} className="h-12 w-12 rounded-xl object-cover" />
+                ) : (
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--accent-2)] text-white">
+                    <Icon size={20} />
+                  </div>
+                )}
                 <h3 className="mt-4 font-heading text-xl italic font-semibold text-[var(--fg)]">{edu.degree}</h3>
                 <p className="mt-1 text-sm font-medium text-[var(--accent-2)]">
                   {edu.link ? (

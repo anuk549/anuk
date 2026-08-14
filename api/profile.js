@@ -3,7 +3,7 @@ import { requireAuth } from './_lib/auth.js';
 import { toObjectId, pick } from './_lib/helpers.js';
 import { applyCors, handlePreflight, sendError, setNoStore, setPublicCache } from './_lib/http.js';
 
-const ALLOWED_FIELDS = ['full_name', 'title', 'phone', 'email', 'linkedin', 'github', 'summary', 'avatar_url', 'location'];
+const ALLOWED_FIELDS = ['full_name', 'title', 'phone', 'email', 'linkedin', 'github', 'summary', 'avatar_url', 'location', 'logo_url'];
 
 export default async function handler(req, res) {
   applyCors(req, res, 'GET, PUT, OPTIONS');

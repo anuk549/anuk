@@ -9,6 +9,7 @@ export interface Profile {
   summary: string;
   avatar_url: string;
   location?: string;
+  logo_url?: string;
 }
 
 export interface Experience {
@@ -19,6 +20,7 @@ export interface Experience {
   points: string[];
   icon: string;
   link?: string;
+  logo_url?: string;
   order_index?: number;
 }
 
@@ -30,6 +32,7 @@ export interface Education {
   description: string;
   icon: string;
   link?: string;
+  logo_url?: string;
   order_index?: number;
 }
 

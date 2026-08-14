@@ -64,7 +64,7 @@ export default function Home() {
   return (
     <div className="cursor-none-desktop min-h-screen bg-[var(--bg)] text-[var(--fg)]">
       <CustomCursor />
-      <Navbar />
+      <Navbar logoUrl={profile?.logo_url} />
       <Hero profile={profile} />
       <TechMarquee items={tech} />
       <About profile={profile} />
