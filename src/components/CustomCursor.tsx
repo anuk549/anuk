@@ -8,39 +8,50 @@ export default function CustomCursor() {
   useEffect(() => {
     if (!enabled) return;
 
-    let mouseX = 0, mouseY = 0;
-    let ringX = 0, ringY = 0;
-    let raf: number;
+    const dot = dotRef.current;
+    const ring = ringRef.current;
+    if (!dot || !ring) return;
 
-    const move = (e: MouseEvent) => {
+    let mouseX = 0;
+    let mouseY = 0;
+    let ringX = 0;
+    let ringY = 0;
+    let raf = 0;
+    let hover = false;
+    let lastHover: boolean | null = null;
+    let lastTarget: EventTarget | null = null;
+
+    const onMove = (e: MouseEvent) => {
       mouseX = e.clientX;
       mouseY = e.clientY;
-      if (dotRef.current) {
-        dotRef.current.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
-      }
-      const target = e.target as HTMLElement;
-      const hovering = !!target.closest('a, button, input, textarea, [role="button"]');
-      if (ringRef.current) {
-        ringRef.current.style.width = hovering ? '52px' : '30px';
-        ringRef.current.style.height = hovering ? '52px' : '30px';
-        ringRef.current.style.borderColor = hovering ? 'var(--accent)' : 'var(--fg-muted)';
-        ringRef.current.style.borderWidth = hovering ? '1.5px' : '1px';
+      // Only resolve hover state when the target actually changes — avoids
+      // running closest() (and allocating NodeLists) on every mousemove.
+      if (e.target !== lastTarget) {
+        lastTarget = e.target;
+        const el = e.target as HTMLElement | null;
+        hover = !!el?.closest?.('a, button, input, textarea, [role="button"]');
       }
     };
 
     const tick = () => {
+      dot.style.transform = `translate3d(${mouseX}px, ${mouseY}px, 0) translate(-50%, -50%)`;
       ringX += (mouseX - ringX) * 0.18;
       ringY += (mouseY - ringY) * 0.18;
-      if (ringRef.current) {
-        ringRef.current.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+      ring.style.transform = `translate3d(${ringX}px, ${ringY}px, 0) translate(-50%, -50%)`;
+      if (hover !== lastHover) {
+        lastHover = hover;
+        ring.style.width = hover ? '52px' : '30px';
+        ring.style.height = hover ? '52px' : '30px';
+        ring.style.borderColor = hover ? 'var(--accent)' : 'var(--fg-muted)';
+        ring.style.borderWidth = hover ? '1.5px' : '1px';
       }
       raf = requestAnimationFrame(tick);
     };
 
-    window.addEventListener('mousemove', move);
+    window.addEventListener('mousemove', onMove, { passive: true });
     raf = requestAnimationFrame(tick);
     return () => {
-      window.removeEventListener('mousemove', move);
+      window.removeEventListener('mousemove', onMove);
       cancelAnimationFrame(raf);
     };
   }, [enabled]);
@@ -56,7 +67,7 @@ export default function CustomCursor() {
       />
       <div
         ref={ringRef}
-        className="pointer-events-none fixed left-0 top-0 z-[998] rounded-full border transition-[width,height,border-color] duration-200 ease-out"
+        className="pointer-events-none fixed left-0 top-0 z-[998] rounded-full transition-[width,height,border-color,border-width] duration-200 ease-out"
         style={{
           width: 30,
           height: 30,

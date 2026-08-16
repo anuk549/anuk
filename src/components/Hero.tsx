@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { ArrowDownRight, Mail, Github, Linkedin, Phone } from 'lucide-react';
 import { playClickSound, playHoverSound } from '../lib/sound';
@@ -14,7 +15,7 @@ interface Profile {
 }
 
 
-export default function Hero({ profile }: { profile: Profile | null }) {
+export default memo(function Hero({ profile }: { profile: Profile | null }) {
   const name = profile?.full_name || 'Anuk Hettiarachchi';
   const [first, ...rest] = name.split(' ');
   const last = rest.join(' ');
@@ -165,4 +166,4 @@ export default function Hero({ profile }: { profile: Profile | null }) {
       </div>
     </section>
   );
-}
+});

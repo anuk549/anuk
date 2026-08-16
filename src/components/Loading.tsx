@@ -1,4 +1,6 @@
-export default function Loading({ className = 'min-h-screen' }: { className?: string }) {
+import { memo } from 'react';
+
+export default memo(function Loading({ className = 'min-h-screen' }: { className?: string }) {
   return (
     <div className={`flex flex-col items-center justify-center gap-4 ${className} text-[var(--fg)]`}>
       <span className="font-heading text-3xl italic">anuk.h</span>
@@ -9,4 +11,4 @@ export default function Loading({ className = 'min-h-screen' }: { className?: st
       </div>
     </div>
   );
-}
+});

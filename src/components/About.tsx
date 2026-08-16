@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
@@ -8,7 +9,7 @@ interface Profile {
   full_name: string;
 }
 
-export default function About({ profile }: { profile: Profile | null }) {
+export default memo(function About({ profile }: { profile: Profile | null }) {
   const name = profile?.full_name || 'Anuk Hettiarachchi';
 
   return (
@@ -50,4 +51,4 @@ export default function About({ profile }: { profile: Profile | null }) {
       </SectionBody>
     </>
   );
-}
+});

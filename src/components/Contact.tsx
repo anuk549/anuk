@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Mail, Phone, Github, Linkedin, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import Section, { SectionBody } from './Section';
@@ -87,7 +87,7 @@ function BirdFly({ onDone }: { onDone: () => void }) {
   );
 }
 
-export default function Contact({ profile }: { profile: Profile | null }) {
+export default memo(function Contact({ profile }: { profile: Profile | null }) {
   const [form, setForm] = useState({ name: '', email: '', message: '', website: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState<'idle' | 'loading' | 'sent' | 'error'>('idle');
@@ -283,4 +283,4 @@ export default function Contact({ profile }: { profile: Profile | null }) {
       {status === 'sent' && <BirdFly onDone={handleBirdDone} />}
     </>
   );
-}
+});

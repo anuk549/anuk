@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ExternalLink, Github, ImageOff, ChevronLeft, ChevronRight } from 'lucide-react';
 import { playClickSound } from '../lib/sound';
 import type { Project } from '../lib/types';
 
-export default function ProjectCard({ p, index }: { p: Project; index: number }) {
+export default memo(function ProjectCard({ p, index }: { p: Project; index: number }) {
   const ref = useRef<HTMLDivElement>(null);
   const [tilt, setTilt] = useState({ x: 0, y: 0 });
   const images = useMemo(
@@ -73,6 +73,7 @@ export default function ProjectCard({ p, index }: { p: Project; index: number })
               src={images[safeCurrent]}
               alt={p.title}
               loading="lazy"
+              decoding="async"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -149,4 +150,4 @@ export default function ProjectCard({ p, index }: { p: Project; index: number })
       </div>
     </motion.div>
   );
-}
+});

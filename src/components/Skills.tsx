@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import Section, { SectionBody } from './Section';
 import { Code2, Server, Wrench, TestTube2, Layers } from 'lucide-react';
@@ -12,7 +13,7 @@ const categoryIcon: Record<string, typeof Code2> = {
   'Methodologies': Layers,
 };
 
-export default function Skills({ items }: { items: Skill[] }) {
+export default memo(function Skills({ items }: { items: Skill[] }) {
   const grouped = items.reduce<Record<string, Skill[]>>((acc, s) => {
     (acc[s.category] ||= []).push(s);
     return acc;
@@ -49,7 +50,10 @@ export default function Skills({ items }: { items: Skill[] }) {
                             alt=""
                             aria-hidden="true"
                             className="h-3.5 w-3.5 opacity-90 transition group-hover:brightness-0"
+                            width={14}
+                            height={14}
                             loading="lazy"
+                            decoding="async"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         )}
@@ -65,4 +69,4 @@ export default function Skills({ items }: { items: Skill[] }) {
       </SectionBody>
     </>
   );
-}
+});

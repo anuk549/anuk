@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import Section, { SectionBody } from './Section';
 import { getIcon } from '../lib/icons';
 
 interface Edu { _id: string; institution: string; degree: string; period: string; description: string; icon: string; link?: string; logo_url?: string; }
 
-export default function Education({ items }: { items: Edu[] }) {
+export default memo(function Education({ items }: { items: Edu[] }) {
   return (
     <>
       <Section id="education" eyebrow="Education" title="Academics" index="02" />
@@ -25,7 +26,7 @@ export default function Education({ items }: { items: Edu[] }) {
                 <div className="relative flex flex-wrap items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
                     {edu.logo_url ? (
-                      <img src={edu.logo_url} alt={`${edu.institution} logo`} className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+                      <img src={edu.logo_url} alt={`${edu.institution} logo`} className="h-12 w-12 shrink-0 rounded-xl object-cover" width={48} height={48} loading="lazy" decoding="async" />
                     ) : (
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--accent)] text-[var(--accent-ink)] transition group-hover:rotate-6">
                         <Icon size={20} />
@@ -63,4 +64,4 @@ export default function Education({ items }: { items: Edu[] }) {
       </SectionBody>
     </>
   );
-}
+});

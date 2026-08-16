@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import Section, { SectionBody } from './Section';
 import { getIcon } from '../lib/icons';
 
 interface Exp { _id: string; company: string; role: string; period: string; points: string[]; icon: string; link?: string; logo_url?: string; }
 
-export default function Experience({ items }: { items: Exp[] }) {
+export default memo(function Experience({ items }: { items: Exp[] }) {
   return (
     <>
       <Section id="experience" eyebrow="Work" title="Experience" index="01" />
@@ -25,7 +26,7 @@ export default function Experience({ items }: { items: Exp[] }) {
                 <div className="relative flex flex-wrap items-start justify-between gap-4">
                   <div className="flex items-start gap-4">
                     {exp.logo_url ? (
-                      <img src={exp.logo_url} alt={`${exp.company} logo`} className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+                      <img src={exp.logo_url} alt={`${exp.company} logo`} className="h-12 w-12 shrink-0 rounded-xl object-cover" width={48} height={48} loading="lazy" decoding="async" />
                     ) : (
                       <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[var(--border)] bg-[var(--accent)] text-[var(--accent-ink)] transition group-hover:rotate-6">
                         <Icon size={20} />
@@ -66,4 +67,4 @@ export default function Experience({ items }: { items: Exp[] }) {
       </SectionBody>
     </>
   );
-}
+});

@@ -1,6 +1,7 @@
+import { memo } from 'react';
 import { playClickSound } from '../lib/sound';
 
-export default function Footer() {
+export default memo(function Footer() {
   return (
     <footer className="border-t border-[var(--border)] px-5 py-8">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 text-[11px] uppercase tracking-[0.2em] text-[var(--fg-muted)] sm:flex-row">
@@ -17,4 +18,4 @@ export default function Footer() {
       </div>
     </footer>
   );
-}
+});

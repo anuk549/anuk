@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Menu, X, Volume2, VolumeX } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
@@ -13,14 +13,14 @@ const links = [
   { href: '#contact', label: 'Contact', n: '06' },
 ];
 
-export default function Navbar({ logoUrl }: { logoUrl?: string }) {
+export default memo(function Navbar({ logoUrl }: { logoUrl?: string }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [muted, setMuted] = useState(getMuteState());
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll, { passive: true });
     return () => { window.removeEventListener('scroll', onScroll); };
   }, []);
 
@@ -43,7 +43,7 @@ export default function Navbar({ logoUrl }: { logoUrl?: string }) {
         <div className={`flex items-center justify-between rounded-full border px-3 py-2 transition-all duration-500 ${scrolled ? 'border-[var(--border)] bg-[var(--card)]/85 backdrop-blur-xl shadow-[0_10px_36px_rgba(0,0,0,0.12)]' : 'border-[var(--border)]/60 bg-[var(--card)]/40 backdrop-blur-sm'}`}>
           <a href="#top" onClick={playClickSound} className="flex items-center gap-2 pl-2 font-heading text-[16px] italic font-semibold tracking-tight text-[var(--fg)]">
             {logoUrl ? (
-              <img src={logoUrl} alt="logo" className="h-8 w-8 rounded-lg object-cover" />
+              <img src={logoUrl} alt="logo" className="h-8 w-8 rounded-lg object-cover" width={32} height={32} decoding="async" />
             ) : (
               <span className="flex h-2 w-2 rounded-full bg-[var(--accent)]" />
             )}
@@ -88,4 +88,4 @@ export default function Navbar({ logoUrl }: { logoUrl?: string }) {
       </div>
     </motion.header>
   );
-}
+});

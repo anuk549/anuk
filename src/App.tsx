@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/react';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Prefetcher from './components/Prefetcher';
 import Home from './pages/Home';
 
 const Bio = lazy(() => import('./pages/Bio'));
@@ -24,6 +25,7 @@ function App() {
       <AuthProvider>
         <BrowserRouter>
           <Analytics />
+          <Prefetcher />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Home />} />

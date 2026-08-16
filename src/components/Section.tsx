@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { motion } from 'framer-motion';
 import type { ReactNode } from 'react';
 
-export default function Section({ id, eyebrow, title, index }: { id: string; eyebrow: string; title: string; index: string; children?: ReactNode }) {
+export default memo(function Section({ id, eyebrow, title, index }: { id: string; eyebrow: string; title: string; index: string; children?: ReactNode }) {
   return (
     <div id={id} className="mx-auto max-w-6xl px-5 pt-24">
       <motion.div
@@ -21,8 +22,8 @@ export default function Section({ id, eyebrow, title, index }: { id: string; eye
       </motion.div>
     </div>
   );
-}
+});
 
-export function SectionBody({ children }: { children: ReactNode }) {
+export const SectionBody = memo(function SectionBody({ children }: { children: ReactNode }) {
   return <div className="mx-auto max-w-6xl px-5 pb-24">{children}</div>;
-}
+});

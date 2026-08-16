@@ -1,10 +1,11 @@
+import { memo } from 'react';
 import { techMeta } from '../lib/icons';
 import type { Tech } from '../lib/types';
 
 function Row({ items }: { items: Tech[] }) {
   const loop = [...items, ...items];
   return (
-    <div className="flex w-max gap-10 animate-marquee">
+    <div className="flex w-max gap-10 animate-marquee [will-change:transform]">
       {loop.map((t, i) => {
         const meta = techMeta[t.name] || { slug: t.slug, color: 'FFFFFF' };
         return (
@@ -13,7 +14,10 @@ function Row({ items }: { items: Tech[] }) {
               src={`https://cdn.simpleicons.org/${meta.slug}/${meta.color}`}
               alt={t.name}
               className="h-6 w-6 opacity-90"
+              width={24}
+              height={24}
               loading="lazy"
+              decoding="async"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
             <span className="font-heading text-2xl font-medium text-[var(--bg)]">{t.name}</span>
@@ -25,7 +29,7 @@ function Row({ items }: { items: Tech[] }) {
   );
 }
 
-export default function TechMarquee({ items }: { items: Tech[] }) {
+export default memo(function TechMarquee({ items }: { items: Tech[] }) {
   if (!items.length) return null;
 
   return (
@@ -35,4 +39,4 @@ export default function TechMarquee({ items }: { items: Tech[] }) {
       <Row items={items} />
     </div>
   );
-}
+});

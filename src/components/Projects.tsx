@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import Section, { SectionBody } from './Section';
 import ProjectCard from './ProjectCard';
 import type { Project } from '../lib/types';
 
-export default function Projects({ items }: { items: Project[] }) {
+export default memo(function Projects({ items }: { items: Project[] }) {
   return (
     <>
       <Section id="projects" eyebrow="Portfolio" title="Selected Work" index="04" />
@@ -18,4 +19,4 @@ export default function Projects({ items }: { items: Project[] }) {
       </SectionBody>
     </>
   );
-}
+});
