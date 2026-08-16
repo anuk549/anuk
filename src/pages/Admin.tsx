@@ -270,7 +270,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--fg)]">
+    <div className="min-h-screen text-[var(--fg)]">
       <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--card)]/80 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
           <div>

@@ -81,7 +81,7 @@ export default function Bio() {
   }
 
   return (
-    <div className="cursor-none-desktop min-h-screen bg-[var(--bg)] text-[var(--fg)]">
+    <div className="cursor-none-desktop min-h-screen text-[var(--fg)]">
       <CustomCursor />
 
       <header className="fixed top-0 left-0 right-0 z-50 px-5 py-4">

@@ -35,14 +35,14 @@ export default function Login() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--bg)] px-5 text-[var(--fg)]">
-      <div className="pointer-events-none absolute inset-0 -z-10 [background-image:radial-gradient(circle_at_1px_1px,var(--grid-dot)_1px,transparent_0)] [background-size:28px_28px]" />
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 text-[var(--fg)]">
+      <div className="pointer-events-none absolute inset-0 z-0 [background-image:radial-gradient(circle_at_1px_1px,var(--grid-dot)_1px,transparent_0)] [background-size:28px_28px]" />
       <div className="pointer-events-none absolute -top-20 left-1/2 h-[420px] w-[420px] -translate-x-1/2 rounded-full bg-[var(--accent)]/20 blur-[130px]" />
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-sm rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-8"
+        className="relative z-10 w-full max-w-sm rounded-[2rem] border border-[var(--border)] bg-[var(--card)] p-8"
       >
         <Link to="/" className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-[var(--fg-muted)] hover:text-[var(--accent-2)]">
           <ArrowLeft size={14} /> Back to site
@@ -59,7 +59,7 @@ export default function Login() {
             <Lock size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--fg-muted)]" />
             <input type="password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" className="w-full rounded-xl border border-[var(--border)] bg-[var(--bg)] py-3 pl-11 pr-4 text-sm outline-none transition focus:border-[var(--accent)]" />
           </div>
-          {error && <p className="text-xs text-[var(--accent-2)]">{error}</p>}
+          {error && <p className="text-xs text-[#ff3b30]">{error}</p>}
           <button type="submit" disabled={loading} className="w-full rounded-full bg-[var(--fg)] px-6 py-3 text-sm font-semibold text-[var(--bg)] transition hover:bg-[var(--accent)] hover:text-[var(--accent-ink)] disabled:opacity-60">
             {loading ? 'Signing in...' : 'Sign In'}
           </button>

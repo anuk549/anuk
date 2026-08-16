@@ -147,7 +147,7 @@ export default function Contact({ profile }: { profile: Profile | null }) {
   const fieldClass = (field: 'name' | 'email' | 'message') =>
     `w-full rounded-xl border bg-[var(--bg)] px-4 py-3 text-sm text-[var(--fg)] outline-none transition focus:border-[var(--accent)] ${
       errors[field]
-        ? 'border-[var(--accent-2)] focus:border-[var(--accent-2)]'
+        ? 'border-[#ff3b30] focus:border-[#ff3b30]'
         : 'border-[var(--border)]'
     }`;
 
@@ -245,7 +245,7 @@ export default function Contact({ profile }: { profile: Profile | null }) {
                 aria-invalid={!!errors.name}
                 className={fieldClass('name')}
               />
-              {errors.name && <p className="mt-1 text-xs text-[var(--accent-2)]">{errors.name}</p>}
+              {errors.name && <p className="mt-1 text-xs text-[#ff3b30]">{errors.name}</p>}
             </div>
             <div>
               <input
@@ -255,7 +255,7 @@ export default function Contact({ profile }: { profile: Profile | null }) {
                 aria-invalid={!!errors.email}
                 className={fieldClass('email')}
               />
-              {errors.email && <p className="mt-1 text-xs text-[var(--accent-2)]">{errors.email}</p>}
+              {errors.email && <p className="mt-1 text-xs text-[#ff3b30]">{errors.email}</p>}
             </div>
             <div>
               <textarea
@@ -266,7 +266,7 @@ export default function Contact({ profile }: { profile: Profile | null }) {
                 aria-invalid={!!errors.message}
                 className={fieldClass('message')}
               />
-              {errors.message && <p className="mt-1 text-xs text-[var(--accent-2)]">{errors.message}</p>}
+              {errors.message && <p className="mt-1 text-xs text-[#ff3b30]">{errors.message}</p>}
             </div>
             <button
               type="submit"
@@ -276,7 +276,7 @@ export default function Contact({ profile }: { profile: Profile | null }) {
             >
               {status === 'sent' ? <><CheckCircle2 size={16} /> Sent!</> : status === 'loading' ? 'Sending...' : <>Send Message <ArrowUpRight size={15} /></>}
             </button>
-            {status === 'error' && <p className="text-center text-xs text-[var(--accent-2)]">Something went wrong. Please try again.</p>}
+            {status === 'error' && <p className="text-center text-xs text-[#ff3b30]">Something went wrong. Please try again.</p>}
           </motion.form>
         </div>
       </SectionBody>

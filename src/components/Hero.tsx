@@ -21,13 +21,13 @@ export default function Hero({ profile }: { profile: Profile | null }) {
 
   return (
     <section id="top" className="relative overflow-hidden pt-32 pb-10">
-      <div className="pointer-events-none absolute inset-0 -z-10">
+      <div className="pointer-events-none absolute inset-0 z-0">
         <div className="absolute inset-0 [background-image:radial-gradient(circle_at_1px_1px,var(--grid-dot)_1px,transparent_0)] [background-size:28px_28px]" />
         <div className="absolute -top-32 right-[-10%] h-[420px] w-[420px] rounded-full bg-[var(--accent)]/25 blur-[130px]" />
         <div className="absolute bottom-0 left-[-10%] h-[380px] w-[380px] rounded-full bg-[var(--accent-2)]/20 blur-[110px]" />
       </div>
 
-      <div className="mx-auto max-w-6xl px-5">
+      <div className="relative z-10 mx-auto max-w-6xl px-5">
         {/* top meta row */}
         <motion.div
           initial={{ opacity: 0, y: -8 }}

@@ -55,14 +55,14 @@ export default function Home() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[var(--bg)] px-6 text-center">
+      <div className="flex min-h-screen items-center justify-center px-6 text-center">
         <p className="text-[var(--fg-muted)]">Couldn't load the portfolio right now. Please refresh the page.</p>
       </div>
     );
   }
 
   return (
-    <div className="cursor-none-desktop min-h-screen bg-[var(--bg)] text-[var(--fg)]">
+    <div className="cursor-none-desktop min-h-screen text-[var(--fg)]">
       <CustomCursor />
       <Navbar logoUrl={profile?.logo_url} />
       <Hero profile={profile} />

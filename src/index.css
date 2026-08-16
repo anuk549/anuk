@@ -1,31 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f6f2e7;
-  --fg: #131209;
-  --fg-muted: #6b6555;
-  --card: #fffdf6;
-  --border: rgba(19, 18, 9, 0.12);
-  --accent: #b6ff2f;
-  --accent-ink: #0f1002;
-  --accent-2: #ff3d5a;
-  --accent-contrast: #0f1002;
-  --grid-dot: rgba(19, 18, 9, 0.07);
-  --noise-opacity: 0.05;
+  --bg: #f5f5f7;
+  --fg: #1d1d1f;
+  --fg-muted: #6e6e73;
+  --card: #ffffff;
+  --border: rgba(0, 0, 0, 0.12);
+  --accent: #0071e3;
+  --accent-ink: #ffffff;
+  --accent-2: #86868b;
+  --accent-contrast: #ffffff;
+  --grid-dot: rgba(0, 0, 0, 0.06);
+  --noise-opacity: 0.03;
 }
 
 .dark {
-  --bg: #0a0a06;
-  --fg: #f3efe1;
-  --fg-muted: #8f8a77;
-  --card: #131309;
-  --border: rgba(243, 239, 225, 0.1);
-  --accent: #ccff5c;
-  --accent-ink: #0a0a06;
-  --accent-2: #ff5c78;
-  --accent-contrast: #0a0a06;
-  --grid-dot: rgba(243, 239, 225, 0.06);
-  --noise-opacity: 0.06;
+  --bg: #000000;
+  --fg: #f5f5f7;
+  --fg-muted: #98989d;
+  --card: #1d1d1f;
+  --border: rgba(255, 255, 255, 0.14);
+  --accent: #2997ff;
+  --accent-ink: #ffffff;
+  --accent-2: #86868b;
+  --accent-contrast: #ffffff;
+  --grid-dot: rgba(255, 255, 255, 0.06);
+  --noise-opacity: 0.04;
 }
 
 * {
@@ -37,11 +37,43 @@ html {
 }
 
 body {
-  background: var(--bg);
+  background: transparent;
   color: var(--fg);
-  font-family: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   transition: background-color 0.5s ease, color 0.5s ease;
   position: relative;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(600px 420px at 85% -5%, rgba(255, 255, 255, 0.95), transparent 65%),
+    radial-gradient(520px 360px at 8% 6%, rgba(186, 214, 247, 0.5), transparent 70%),
+    linear-gradient(180deg, #e9f0fa 0%, #f5f7fa 45%, #f5f5f7 100%);
+}
+
+.dark body::after {
+  background-image:
+    radial-gradient(1px 1px at 15% 22%, rgba(255, 255, 255, 0.9), transparent 100%),
+    radial-gradient(1px 1px at 32% 48%, rgba(255, 255, 255, 0.7), transparent 100%),
+    radial-gradient(1.5px 1.5px at 55% 12%, rgba(255, 255, 255, 0.85), transparent 100%),
+    radial-gradient(1px 1px at 68% 34%, rgba(255, 255, 255, 0.6), transparent 100%),
+    radial-gradient(1.5px 1.5px at 82% 62%, rgba(255, 255, 255, 0.8), transparent 100%),
+    radial-gradient(1px 1px at 45% 70%, rgba(255, 255, 255, 0.65), transparent 100%),
+    radial-gradient(1px 1px at 90% 20%, rgba(255, 255, 255, 0.7), transparent 100%),
+    radial-gradient(1.5px 1.5px at 8% 75%, rgba(255, 255, 255, 0.8), transparent 100%),
+    radial-gradient(1px 1px at 25% 88%, rgba(255, 255, 255, 0.6), transparent 100%),
+    radial-gradient(1px 1px at 74% 8%, rgba(255, 255, 255, 0.55), transparent 100%),
+    radial-gradient(1.5px 1.5px at 42% 33%, rgba(255, 255, 255, 0.75), transparent 100%),
+    radial-gradient(1px 1px at 92% 82%, rgba(255, 255, 255, 0.65), transparent 100%),
+    linear-gradient(180deg, #0a1029 0%, #060913 45%, #000000 100%);
 }
 
 body::before {
@@ -56,7 +88,12 @@ body::before {
 }
 
 .font-heading, h1, h2, h3 {
-  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.italic {
+  font-style: normal;
 }
 
 ::selection {

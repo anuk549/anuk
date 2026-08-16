@@ -12,8 +12,7 @@ const ThemeContext = createContext<ThemeContextValue>({ theme: 'dark', toggleThe
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     const stored = localStorage.getItem('portfolio-theme') as Theme | null;
-    if (stored) return stored;
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return stored === 'light' ? 'light' : 'dark';
   });
 
   useEffect(() => {

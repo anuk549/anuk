@@ -5,7 +5,7 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Anuk Hettiarachchi — Full Stack Developer portfolio built with React, Node.js and MongoDB, inspired by Apple's Human Interface Guidelines." />
-    <meta name="theme-color" content="#0a0a06" />
+    <meta name="theme-color" content="#000000" />
     <title>Anuk Hettiarachchi — Full Stack Developer</title>
     <script>
       (function () {
@@ -13,7 +13,7 @@
           var theme = localStorage.getItem('portfolio-theme');
           if (theme === 'light' || theme === 'dark') {
             document.documentElement.classList.toggle('dark', theme === 'dark');
-          } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          } else {
             document.documentElement.classList.add('dark');
           }
         } catch (e) {}
