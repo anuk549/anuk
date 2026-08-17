@@ -1,7 +1,7 @@
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Github, ImageOff, Images, X, ChevronLeft, ChevronRight, RefreshCw, RotateCcw } from 'lucide-react';
+import { ExternalLink, Github, ImageOff, Images, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, RefreshCw, RotateCcw } from 'lucide-react';
 import { playClickSound } from '../lib/sound';
 import type { Project } from '../lib/types';
 
@@ -14,6 +14,9 @@ export default memo(function ProjectCard({ p, index }: { p: Project; index: numb
   const [flipped, setFlipped] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
+  const [zoomed, setZoomed] = useState(false);
+  const [touchX, setTouchX] = useState<number | null>(null);
+  const thumbsRef = useRef<HTMLDivElement>(null);
 
   const hasLinks = Boolean(p.live_url || p.github_url);
 
@@ -25,21 +28,42 @@ export default memo(function ProjectCard({ p, index }: { p: Project; index: numb
 
   useEffect(() => {
     if (!galleryOpen) return;
+    setZoomed(false);
     document.body.style.overflow = 'hidden';
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setGalleryOpen(false); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setGalleryOpen(false);
+      if (e.key === 'ArrowRight') setGalleryIndex(i => (images.length ? (i + 1) % images.length : 0));
+      if (e.key === 'ArrowLeft') setGalleryIndex(i => (images.length ? (i - 1 + images.length) % images.length : 0));
+    };
     window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', onKey);
     };
-  }, [galleryOpen]);
+  }, [galleryOpen, images.length]);
+
+  useEffect(() => {
+    if (!galleryOpen) return;
+    const el = thumbsRef.current?.querySelector('[data-active="true"]');
+    el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+  }, [galleryOpen, galleryIndex]);
 
   const safeCurrent = images.length ? current % images.length : 0;
   const safeGallery = images.length ? galleryIndex % images.length : 0;
   const next = (e: React.MouseEvent) => { e.stopPropagation(); setCurrent(c => (images.length ? (c + 1) % images.length : 0)); };
   const prev = (e: React.MouseEvent) => { e.stopPropagation(); setCurrent(c => (images.length ? (c - 1 + images.length) % images.length : 0)); };
-  const galleryNext = (e: React.MouseEvent) => { e.stopPropagation(); setGalleryIndex(i => (i + 1) % images.length); };
-  const galleryPrev = (e: React.MouseEvent) => { e.stopPropagation(); setGalleryIndex(i => (i - 1 + images.length) % images.length); };
+  const galleryNext = (e: React.MouseEvent) => { e.stopPropagation(); setZoomed(false); setGalleryIndex(i => (i + 1) % images.length); };
+  const galleryPrev = (e: React.MouseEvent) => { e.stopPropagation(); setZoomed(false); setGalleryIndex(i => (i - 1 + images.length) % images.length); };
+  const onTouchStart = (e: React.TouchEvent) => setTouchX(e.touches[0].clientX);
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchX === null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) setGalleryIndex(i => (i + 1) % images.length);
+      else setGalleryIndex(i => (i - 1 + images.length) % images.length);
+    }
+    setTouchX(null);
+  };
 
   return (
     <motion.div
@@ -216,7 +240,7 @@ export default memo(function ProjectCard({ p, index }: { p: Project; index: numb
               className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-black/85 p-4 backdrop-blur-md sm:p-8"
             >
               <div className="absolute right-5 top-5 flex items-center gap-3">
-                <span className="text-[12px] font-medium tabular-nums text-white/60">
+                <span className="rounded-full bg-white/10 px-3 py-1 text-[12px] font-medium tabular-nums text-white backdrop-blur-md border border-white/15">
                   {safeGallery + 1} / {images.length}
                 </span>
                 <button
@@ -228,20 +252,36 @@ export default memo(function ProjectCard({ p, index }: { p: Project; index: numb
                 </button>
               </div>
 
+              <div className="absolute left-5 top-5">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/50">Gallery</p>
+                <h3 className="font-heading text-lg italic font-semibold text-white drop-shadow">{p.title}</h3>
+              </div>
+
               <div onClick={(e) => e.stopPropagation()} className="relative flex w-full max-w-5xl flex-col gap-4">
-                <div className="relative overflow-hidden rounded-2xl bg-black/40">
-                  <AnimatePresence initial={false}>
+                <div
+                  onTouchStart={onTouchStart}
+                  onTouchEnd={onTouchEnd}
+                  className="relative overflow-hidden rounded-2xl bg-black/40 select-none"
+                >
+                  <AnimatePresence initial={false} mode="popLayout">
                     <motion.img
                       key={images[safeGallery]}
                       src={images[safeGallery]}
                       alt={`${p.title} image ${safeGallery + 1}`}
-                      initial={{ opacity: 0, scale: 1.02 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="mx-auto max-h-[62vh] w-auto object-contain"
+                      initial={{ opacity: 0, scale: 0.96, rotate: 1.5 }}
+                      animate={{ opacity: 1, scale: zoomed ? 1.6 : 1, rotate: 0 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={{ type: 'spring', stiffness: 260, damping: 26 }}
+                      onClick={() => setZoomed(z => !z)}
+                      draggable={false}
+                      className={`mx-auto max-h-[62vh] w-auto object-contain transition-[cursor] ${zoomed ? 'cursor-zoom-out' : 'cursor-zoom-in'}`}
                     />
                   </AnimatePresence>
+                  <div className="absolute bottom-3 left-3 flex items-center gap-2">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-black/40 text-white/90 backdrop-blur-md border border-white/15">
+                      {zoomed ? <ZoomOut size={13} /> : <ZoomIn size={13} />}
+                    </span>
+                  </div>
                   {images.length > 1 && (
                     <>
                       <button
@@ -264,18 +304,21 @@ export default memo(function ProjectCard({ p, index }: { p: Project; index: numb
 
                 {/* All images in a row */}
                 <div
+                  ref={thumbsRef}
                   onWheel={(e) => { e.currentTarget.scrollLeft += e.deltaY; }}
-                  className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin]"
+                  className="flex gap-2 overflow-x-auto pb-2 [scrollbar-width:thin] [scroll-behavior:smooth]"
                 >
                   {images.map((img, i) => (
-                    <button
+                    <motion.button
                       key={img}
-                      onClick={(e) => { e.stopPropagation(); playClickSound(); setGalleryIndex(i); }}
+                      onClick={(e) => { e.stopPropagation(); playClickSound(); setZoomed(false); setGalleryIndex(i); }}
                       aria-label={`Show image ${i + 1}`}
-                      className={`relative h-16 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 transition ${i === safeGallery ? 'border-[var(--accent)]' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                      whileTap={{ scale: 0.92 }}
+                      data-active={i === safeGallery}
+                      className={`relative h-16 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg border-2 transition duration-300 ${i === safeGallery ? 'border-[var(--accent)] opacity-100 scale-100 shadow-[0_0_0_3px_rgba(0,0,0,0.3)]' : 'border-transparent opacity-50 hover:opacity-90 hover:scale-105'}`}
                     >
                       <img src={img} alt="" loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                    </button>
+                    </motion.button>
                   ))}
                 </div>
               </div>
