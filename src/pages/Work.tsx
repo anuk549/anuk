@@ -99,7 +99,7 @@ export default function Work() {
           )}
 
           {!loading && !error && (
-            <div className="grid grid-cols-2 gap-4 sm:gap-7 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3">
               {filtered.map((p, i) => (
                 <ProjectCard key={p._id || p.key || i} p={p} index={i} />
               ))}

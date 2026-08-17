@@ -6,28 +6,36 @@ import ProjectCard from './ProjectCard';
 import { playClickSound } from '../lib/sound';
 import type { Project } from '../lib/types';
 
+function getColumns(): number {
+  if (typeof window === 'undefined') return 3;
+  if (window.matchMedia('(min-width: 1024px)').matches) return 3;
+  if (window.matchMedia('(min-width: 640px)').matches) return 2;
+  return 1;
+}
+
 export default memo(function Projects({ items }: { items: Project[] }) {
-  const [isDesktop, setIsDesktop] = useState(
-    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 1024px)').matches
-  );
+  const [cols, setCols] = useState<number>(getColumns);
 
   useEffect(() => {
-    const mq = window.matchMedia('(min-width: 1024px)');
-    const onChange = () => setIsDesktop(mq.matches);
-    onChange();
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
+    const mqSm = window.matchMedia('(min-width: 640px)');
+    const mqLg = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => setCols(getColumns());
+    mqSm.addEventListener('change', onChange);
+    mqLg.addEventListener('change', onChange);
+    return () => {
+      mqSm.removeEventListener('change', onChange);
+      mqLg.removeEventListener('change', onChange);
+    };
   }, []);
 
-  const limit = isDesktop ? 3 : 2;
-  const visible = items.slice(0, limit);
+  const visible = items.slice(0, cols);
   const hasMore = items.length > visible.length;
 
   return (
     <>
       <Section id="projects" eyebrow="Portfolio" title="Selected Work" index="04" />
       <SectionBody>
-        <div className="grid grid-cols-2 gap-4 sm:gap-7 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-7 lg:grid-cols-3">
           {visible.map((p, i) => (
             <ProjectCard key={p._id || p.key || i} p={p} index={i} />
           ))}
