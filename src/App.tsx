@@ -8,6 +8,7 @@ import Prefetcher from './components/Prefetcher';
 import Home from './pages/Home';
 
 const Bio = lazy(() => import('./pages/Bio'));
+const Work = lazy(() => import('./pages/Work'));
 const Login = lazy(() => import('./pages/Login'));
 const Admin = lazy(() => import('./pages/Admin'));
 
@@ -30,6 +31,7 @@ function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/bio" element={<Bio />} />
+              <Route path="/work" element={<Work />} />
               <Route path="/login" element={<Login />} />
               <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
             </Routes>
