@@ -54,9 +54,14 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background-image:
-    radial-gradient(600px 420px at 85% -5%, rgba(255, 255, 255, 0.95), transparent 65%),
-    radial-gradient(520px 360px at 8% 6%, rgba(186, 214, 247, 0.5), transparent 70%),
-    linear-gradient(180deg, #e9f0fa 0%, #f5f7fa 45%, #f5f5f7 100%);
+    radial-gradient(ellipse 50% 20% at 15% 10%, rgba(255, 255, 255, 0.9), transparent 65%),
+    radial-gradient(ellipse 42% 16% at 35% 4%, rgba(255, 255, 255, 0.85), transparent 65%),
+    radial-gradient(ellipse 55% 22% at 60% 15%, rgba(255, 255, 255, 0.8), transparent 65%),
+    radial-gradient(ellipse 38% 14% at 82% 8%, rgba(255, 255, 255, 0.85), transparent 65%),
+    radial-gradient(ellipse 45% 16% at 92% 20%, rgba(255, 255, 255, 0.7), transparent 65%),
+    radial-gradient(ellipse 48% 18% at 45% 40%, rgba(255, 255, 255, 0.55), transparent 65%),
+    radial-gradient(ellipse 35% 12% at 8% 32%, rgba(255, 255, 255, 0.6), transparent 65%),
+    linear-gradient(180deg, #6db6ee 0%, #8ec7f4 40%, #c2e0fa 70%, #eaf4fd 100%);
 }
 
 .dark body::after {
